@@ -1,0 +1,153 @@
+[data-bs-theme="dark"] {
+    color-scheme: dark;                       /* barras de scroll y controles nativos oscuros */
+
+    --bs-body-bg: #14161b;
+    --bs-body-color: #dfe3e8;
+    --bs-border-color: #2b2f37;
+    --bs-secondary-color: rgba(223, 227, 232, 0.7);
+
+    --panel-superficie: #1b1e25;              /* tarjetas, barras, menús */
+    --panel-superficie-2: #232730;            /* encabezados de tabla, elementos suaves */
+}
+
+/* ---------- Tarjetas y superficies ---------- */
+[data-bs-theme="dark"] .card {
+    --bs-card-bg: var(--panel-superficie);
+    --bs-card-cap-bg: var(--panel-superficie-2);
+    --bs-card-border-color: var(--bs-border-color);
+}
+
+/* Clases de Bootstrap que son "claras" a la fuerza */
+[data-bs-theme="dark"] .bg-white {
+    background-color: var(--panel-superficie) !important;
+}
+[data-bs-theme="dark"] .bg-light {
+    background-color: var(--panel-superficie-2) !important;
+}
+[data-bs-theme="dark"] .text-bg-light {
+    background-color: var(--panel-superficie-2) !important;
+    color: var(--bs-body-color) !important;
+}
+[data-bs-theme="dark"] .btn-light {
+    --bs-btn-bg: var(--panel-superficie-2);
+    --bs-btn-border-color: var(--bs-border-color);
+    --bs-btn-color: var(--bs-body-color);
+    --bs-btn-hover-bg: #2c313b;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-disabled-bg: var(--panel-superficie-2);
+    --bs-btn-disabled-color: var(--bs-body-color);
+    --bs-btn-disabled-border-color: var(--bs-border-color);
+}
+
+/* Botones oscuros: en modo oscuro se pierden contra el fondo, se vuelven claros */
+[data-bs-theme="dark"] .btn-dark {
+    --bs-btn-bg: #e6e9ee;
+    --bs-btn-border-color: #e6e9ee;
+    --bs-btn-color: #14161b;
+    --bs-btn-hover-bg: #ffffff;
+    --bs-btn-hover-border-color: #ffffff;
+    --bs-btn-hover-color: #14161b;
+    --bs-btn-active-bg: #ffffff;
+    --bs-btn-active-color: #14161b;
+}
+[data-bs-theme="dark"] .btn-outline-dark {
+    --bs-btn-color: #e6e9ee;
+    --bs-btn-border-color: #6b7280;
+    --bs-btn-hover-bg: #e6e9ee;
+    --bs-btn-hover-color: #14161b;
+    --bs-btn-hover-border-color: #e6e9ee;
+}
+
+/* ---------- Tablas ---------- */
+[data-bs-theme="dark"] .table {
+    --bs-table-color: var(--bs-body-color);
+    --bs-table-border-color: var(--bs-border-color);
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
+    --bs-table-hover-color: #fff;
+}
+[data-bs-theme="dark"] .table-light,
+[data-bs-theme="dark"] .table > thead.table-light > tr > * {
+    --bs-table-bg: var(--panel-superficie-2);
+    --bs-table-color: var(--bs-body-color);
+    --bs-table-border-color: var(--bs-border-color);
+}
+
+/* ---------- DataTables ---------- */
+[data-bs-theme="dark"] {
+    --dt-html-background: var(--panel-superficie);   /* variable de DataTables 2 */
+}
+[data-bs-theme="dark"] .dt-container,
+[data-bs-theme="dark"] .dataTables_wrapper {
+    color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] table.dataTable > tbody > tr {
+    background-color: transparent;
+}
+[data-bs-theme="dark"] .dt-container .dt-input,
+[data-bs-theme="dark"] .dataTables_wrapper input,
+[data-bs-theme="dark"] .dataTables_wrapper select {
+    background-color: var(--panel-superficie-2);
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+}
+[data-bs-theme="dark"] .dt-container .dt-paging .dt-paging-button,
+[data-bs-theme="dark"] .dataTables_wrapper .paginate_button {
+    color: var(--bs-body-color) !important;
+}
+[data-bs-theme="dark"] .dt-container .dt-paging .dt-paging-button.current,
+[data-bs-theme="dark"] .dataTables_wrapper .paginate_button.current {
+    background: var(--panel-superficie-2) !important;
+    border-color: var(--bs-border-color) !important;
+    color: #fff !important;
+}
+[data-bs-theme="dark"] .dt-container .dt-paging .dt-paging-button:hover:not(.disabled),
+[data-bs-theme="dark"] .dataTables_wrapper .paginate_button:hover {
+    background: #2c313b !important;
+    border-color: var(--bs-border-color) !important;
+    color: #fff !important;
+}
+
+/* ---------- Menú lateral y barra superior ---------- */
+[data-bs-theme="dark"] .sidebar {
+    background-color: var(--panel-superficie);
+    border-color: var(--bs-border-color);
+}
+[data-bs-theme="dark"] .topbar,
+[data-bs-theme="dark"] .navbar {
+    background-color: var(--panel-superficie);
+    border-color: var(--bs-border-color);
+}
+
+/* ---------- Menús desplegables, ventanas y formularios ---------- */
+[data-bs-theme="dark"] .dropdown-menu,
+[data-bs-theme="dark"] .modal-content,
+[data-bs-theme="dark"] .offcanvas {
+    background-color: var(--panel-superficie);
+    border-color: var(--bs-border-color);
+}
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: var(--panel-superficie-2);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background-color: var(--panel-superficie-2);
+    color: #fff;
+}
+[data-bs-theme="dark"] .form-control::placeholder {
+    color: rgba(223, 227, 232, 0.45);
+}
+
+/* Las imágenes con fondo blanco (logos, miniaturas sin imagen) no deslumbran tanto */
+[data-bs-theme="dark"] img {
+    filter: brightness(0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body, .card, .card-header, .navbar, .table, .form-control, .form-select {
+        transition: none;
+    }
+}
