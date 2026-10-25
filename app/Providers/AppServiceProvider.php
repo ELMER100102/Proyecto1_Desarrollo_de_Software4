@@ -26,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
         View::composer('web.*', function ($view) {
         $view->with('institucion', Contacto::first());
+        //pedido
+        $view->with('pedidosConfig', \App\Models\ConfigPedido::first());
     });
     }
 }

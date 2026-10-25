@@ -25,38 +25,33 @@
 
     <form id="formVenta" action="{{ route('admin.facturas.store') }}" method="POST">
         @csrf
-
-        <div class="row g-4 align-items-start">
-
-            {{-- IZQUIERDA: cliente + productos --}}
-            <div class="col-12 col-xl-5">
-
-                <div class="card mb-4">
-                    <div class="card-header bg-white">
-                        <h3 class="h6 mb-0">Datos de la venta</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="tipo_pago" class="form-label">Tipo de pago</label>
-                            <select id="tipo_pago" name="tipo_pago"
-                                class="form-select @error('tipo_pago') is-invalid @enderror">
-                                <option value="contado" @selected(old('tipo_pago', 'contado') === 'contado')>Contado</option>
-                                <option value="credito" @selected(old('tipo_pago') === 'credito')>Crédito</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="cliente" class="form-label">
-                                Cliente <span id="clienteObligatorio" class="text-danger d-none">*</span>
-                            </label>
-                            <input type="text" id="cliente" name="cliente" maxlength="150"
-                                class="form-control @error('cliente') is-invalid @enderror"
-                                value="{{ old('cliente') }}" placeholder="Cliente de contado">
-                            <div class="form-text">Opcional al contado; obligatorio a crédito.</div>
-                        </div>
-                    </div>
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h3 class="h6 mb-0">Datos de la venta</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="tipo_pago" class="form-label">Tipo de pago</label>
+                    <select id="tipo_pago" name="tipo_pago" class="form-select @error('tipo_pago') is-invalid @enderror">
+                        <option value="contado" @selected(old('tipo_pago', 'contado') === 'contado')>Contado</option>
+                        <option value="credito" @selected(old('tipo_pago') === 'credito')>Crédito</option>
+                    </select>
                 </div>
 
+                <div>
+                    <label for="cliente" class="form-label">
+                        Cliente <span id="clienteObligatorio" class="text-danger d-none">*</span>
+                    </label>
+                    <input type="text" id="cliente" name="cliente" maxlength="150"
+                        class="form-control @error('cliente') is-invalid @enderror" value="{{ old('cliente') }}"
+                        placeholder="Cliente de contado">
+                    <div class="form-text">Opcional al contado; obligatorio a crédito.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 align-items-start">
+            <div class="col-12 col-xl-5">
                 <div class="card">
                     <div class="card-header bg-white">
                         <h3 class="h6 mb-0">Productos</h3>
@@ -70,14 +65,13 @@
                 </div>
             </div>
 
-            {{-- DERECHA: carrito --}}
             <div class="col-12 col-xl-7">
                 <div class="card">
                     <div class="card-header bg-white">
                         <h3 class="h6 mb-0">Detalle de la venta</h3>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
+                        <div class="table-responsive" style="max-height: 360px; overflow-y: auto;">
                             <table id="carrito" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
@@ -109,8 +103,6 @@
                                 </tr>
                             </table>
                         </div>
-
-                        {{-- Aquí el JS crea items[0][id_producto], items[0][cantidad], ... --}}
                         <div id="items"></div>
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
@@ -128,8 +120,8 @@
 @section('scripts')
     <script>
         const productos = @json($productos);
-        const previos = @json(old('items', []));   // si la validación falló, se recupera el carrito
-        const carrito = {};                          // id_producto -> cantidad
+        const previos = @json(old('items', [])); // si la validación falló, se recupera el carrito
+        const carrito = {}; // id_producto -> cantidad
         let temporizadorAviso = null;
 
         const dinero = n => '₡' + Number(n).toLocaleString('es-CR', {
@@ -161,7 +153,7 @@
                 return;
             }
 
-            visibles.forEach(function (p) {
+            visibles.forEach(function(p) {
                 const detalle = p.categoria + (p.stock !== null ? ' · Stock: ' + p.stock : '');
 
                 $lista.append(
@@ -170,12 +162,21 @@
                         class: 'list-group-item list-group-item-action d-flex justify-content-between align-items-center agregar-producto',
                         'data-id': p.id
                     })
-                        .append(
-                            $('<span>')
-                                .append($('<span>', { class: 'fw-semibold', text: p.nombre }))
-                                .append($('<small>', { class: 'd-block text-muted', text: detalle }))
-                        )
-                        .append($('<span>', { class: 'text-nowrap ms-3', text: dinero(p.precio) }))
+                    .append(
+                        $('<span>')
+                        .append($('<span>', {
+                            class: 'fw-semibold',
+                            text: p.nombre
+                        }))
+                        .append($('<small>', {
+                            class: 'd-block text-muted',
+                            text: detalle
+                        }))
+                    )
+                    .append($('<span>', {
+                        class: 'text-nowrap ms-3',
+                        text: dinero(p.precio)
+                    }))
                 );
             });
         }
@@ -184,9 +185,11 @@
         function pintarCarrito() {
             const $tbody = $('#carrito tbody').empty();
             const $items = $('#items').empty();
-            let total = 0, base = 0, indice = 0;
+            let total = 0,
+                base = 0,
+                indice = 0;
 
-            Object.keys(carrito).forEach(function (id) {
+            Object.keys(carrito).forEach(function(id) {
                 const p = porId(id);
                 const cantidad = carrito[id];
                 const linea = Math.round(p.precio * cantidad * 100) / 100;
@@ -196,38 +199,74 @@
 
                 $tbody.append(
                     $('<tr>')
-                        .append($('<td>').text(p.nombre))
-                        .append(
-                            $('<td>', { class: 'text-center' }).append(
-                                $('<div>', { class: 'btn-group btn-group-sm' })
-                                    .append($('<button>', { type: 'button', class: 'btn btn-outline-secondary btn-menos', 'data-id': id, text: '−' }))
-                                    .append($('<span>', { class: 'btn btn-light disabled px-3', text: cantidad }))
-                                    .append($('<button>', { type: 'button', class: 'btn btn-outline-secondary btn-mas', 'data-id': id, text: '+' }))
-                            )
+                    .append($('<td>').text(p.nombre))
+                    .append(
+                        $('<td>', {
+                            class: 'text-center'
+                        }).append(
+                            $('<div>', {
+                                class: 'btn-group btn-group-sm'
+                            })
+                            .append($('<button>', {
+                                type: 'button',
+                                class: 'btn btn-outline-secondary btn-menos',
+                                'data-id': id,
+                                text: '−'
+                            }))
+                            .append($('<span>', {
+                                class: 'btn btn-light disabled px-3',
+                                text: cantidad
+                            }))
+                            .append($('<button>', {
+                                type: 'button',
+                                class: 'btn btn-outline-secondary btn-mas',
+                                'data-id': id,
+                                text: '+'
+                            }))
                         )
-                        .append($('<td>', { class: 'text-end', text: dinero(linea) }))
-                        .append(
-                            $('<td>', { class: 'text-end' }).append(
-                                $('<button>', {
-                                    type: 'button',
-                                    class: 'btn btn-sm btn-outline-danger btn-quitar',
-                                    'data-id': id,
-                                    title: 'Quitar',
-                                    'aria-label': 'Quitar ' + p.nombre
-                                }).append($('<i>', { class: 'bi bi-trash' }))
-                            )
+                    )
+                    .append($('<td>', {
+                        class: 'text-end',
+                        text: dinero(linea)
+                    }))
+                    .append(
+                        $('<td>', {
+                            class: 'text-end'
+                        }).append(
+                            $('<button>', {
+                                type: 'button',
+                                class: 'btn btn-sm btn-outline-danger btn-quitar',
+                                'data-id': id,
+                                title: 'Quitar',
+                                'aria-label': 'Quitar ' + p.nombre
+                            }).append($('<i>', {
+                                class: 'bi bi-trash'
+                            }))
                         )
+                    )
                 );
 
-                $items.append($('<input>', { type: 'hidden', name: 'items[' + indice + '][id_producto]', value: id }));
-                $items.append($('<input>', { type: 'hidden', name: 'items[' + indice + '][cantidad]', value: cantidad }));
+                $items.append($('<input>', {
+                    type: 'hidden',
+                    name: 'items[' + indice + '][id_producto]',
+                    value: id
+                }));
+                $items.append($('<input>', {
+                    type: 'hidden',
+                    name: 'items[' + indice + '][cantidad]',
+                    value: cantidad
+                }));
                 indice++;
             });
 
             if (indice === 0) {
                 $tbody.append(
                     $('<tr>').append(
-                        $('<td>', { colspan: 4, class: 'text-center text-muted py-4', text: 'Toque un producto de la lista para agregarlo.' })
+                        $('<td>', {
+                            colspan: 4,
+                            class: 'text-center text-muted py-4',
+                            text: 'Toque un producto de la lista para agregarlo.'
+                        })
                     )
                 );
             }
@@ -240,7 +279,9 @@
 
         function cambiar(id, delta) {
             const p = porId(id);
-            if (!p) { return; }
+            if (!p) {
+                return;
+            }
 
             const nueva = (carrito[id] || 0) + delta;
 
@@ -259,14 +300,22 @@
         $('#buscarProducto').on('input', pintarProductos);
 
         // Enter en el buscador no debe enviar el formulario
-        $('#buscarProducto').on('keydown', function (e) {
-            if (e.key === 'Enter') { e.preventDefault(); }
+        $('#buscarProducto').on('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
         });
 
-        $(document).on('click', '.agregar-producto', function () { cambiar($(this).data('id'), 1); });
-        $(document).on('click', '.btn-mas', function () { cambiar($(this).data('id'), 1); });
-        $(document).on('click', '.btn-menos', function () { cambiar($(this).data('id'), -1); });
-        $(document).on('click', '.btn-quitar', function () {
+        $(document).on('click', '.agregar-producto', function() {
+            cambiar($(this).data('id'), 1);
+        });
+        $(document).on('click', '.btn-mas', function() {
+            cambiar($(this).data('id'), 1);
+        });
+        $(document).on('click', '.btn-menos', function() {
+            cambiar($(this).data('id'), -1);
+        });
+        $(document).on('click', '.btn-quitar', function() {
             delete carrito[$(this).data('id')];
             pintarCarrito();
         });
@@ -280,12 +329,12 @@
         $('#tipo_pago').on('change', revisarCredito);
 
         // Evita el doble clic (dos comprobantes iguales)
-        $('#formVenta').on('submit', function () {
+        $('#formVenta').on('submit', function() {
             $('#btnGuardar').prop('disabled', true).text('Guardando...');
         });
 
         /* ---------- INICIO ---------- */
-        previos.forEach(function (it) {
+        previos.forEach(function(it) {
             if (porId(it.id_producto)) {
                 carrito[it.id_producto] = (carrito[it.id_producto] || 0) + Number(it.cantidad);
             }

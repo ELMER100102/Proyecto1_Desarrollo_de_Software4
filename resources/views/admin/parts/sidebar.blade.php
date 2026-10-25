@@ -1,5 +1,4 @@
-<aside id="sidebar" class="offcanvas-md offcanvas-start text-white flex-shrink-0" tabindex="-1"
-    style="width: 240px;">
+<aside id="sidebar" class="offcanvas-md offcanvas-start text-white flex-shrink-0" tabindex="-1" style="width: 240px;">
     <div class="offcanvas-header">
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
             data-bs-target="#sidebar"></button>
@@ -47,6 +46,15 @@
                     <i class="bi bi-receipt me-2"></i>Facturas
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.pedidos.index') }}"
+                    class="nav-link text-white {{ request()->routeIs('admin.pedidos.*') ? 'active' : '' }}">
+                    <i class="bi bi-bag-check"></i> Pedidos
+                    <span id="badgePedidos" class="badge text-bg-danger ms-1 d-none"
+                        data-url="{{ route('admin.pedidos.resumen') }}">0</span>
+                </a>
+            </li>
+
             </li>
             <li class="nav-item">
                 <a class="nav-link text-white {{ request()->routeIs('admin.compras.*') ? 'active' : '' }}"
@@ -54,6 +62,7 @@
                     <i class="bi bi-bag-plus me-2"></i>Compras
                 </a>
             </li>
+
             <li class="nav-item">
                 <a class="nav-link text-white {{ request()->routeIs('admin.proveedores.*') ? 'active' : '' }}"
                     href="{{ route('admin.proveedores.index') }}">
@@ -71,6 +80,11 @@
                     href="{{ route('admin.contacto.edit') }}">
                     <i class="bi bi-telephone me-2"></i>Contacto
                 </a>
+            </li>
+            <li>
+                <button type="button" id="btnInstalar" class="btn btn-sm btn-outline-light d-none">
+                    <i class="bi bi-download"></i> Instalar app
+                </button>
             </li>
         </ul>
     </div>

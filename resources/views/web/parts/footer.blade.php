@@ -19,13 +19,15 @@
                             @if ($institucion?->facebook)
                                 <li>
                                     <a href="{{ $institucion->facebook }}" target="_blank" rel="noopener"
-                                        aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                                        aria-label="Facebook"><i class="bi bi-facebook"
+                                            style="font-size: 20px;"></i></a>
                                 </li>
                             @endif
                             @if ($institucion?->instagram)
                                 <li>
                                     <a href="{{ $institucion->instagram }}" target="_blank" rel="noopener"
-                                        aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                                        aria-label="Instagram"><i class="bi bi-instagram"
+                                            style="font-size: 20px;"></i></a>
                                 </li>
                             @endif
                         </ul>
@@ -84,7 +86,13 @@
                                 <a href="mailto:{{ $institucion->correo }}">{{ $institucion->correo }}</a>
                             </li>
                         @endif
+                        <li>
+                            <button type="button" id="btnInstalar" class="btn btn-sm btn-outline-light d-none">
+                                <i class="bi bi-download"></i> Instalar app
+                            </button>
+                        </li>
                     </ul>
+
                 </div>
             </div>
 
@@ -96,6 +104,7 @@
                 <small>© {{ date('Y') }} {{ $institucion?->nombre_empresa }}. Todos los derechos
                     reservados.</small>
             </div>
+
         </div>
 
     </div>

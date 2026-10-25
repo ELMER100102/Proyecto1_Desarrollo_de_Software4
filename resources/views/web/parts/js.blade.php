@@ -11,4 +11,6 @@
 <script src="{{ asset('assets/web/js/aos.js') }}"></script>
 <script src="{{ asset('assets/web/js/scrollax.min.js') }}"></script>
 
+<script src="{{ asset('assets/web/js/pedido.js') }}"></script>
 <script src="{{ asset('assets/web/js/main.js') }}"></script>
+

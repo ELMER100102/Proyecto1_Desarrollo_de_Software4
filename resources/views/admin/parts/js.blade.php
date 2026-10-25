@@ -4,4 +4,5 @@
 <script src="{{ asset('assets/admin/js/dataTables.min.js') }}"></script>
 
 {{-- NUESTRO CODIGO --}}
+<script src="{{ asset('assets/admin/js/pedidos-admin.js') }}"></script>
 <script src="{{ asset('assets/admin/js/app.js') }}"></script>

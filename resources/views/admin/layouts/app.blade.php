@@ -7,6 +7,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('titulo', 'Panel administrativo')</title>
 
+    <link rel="manifest" href="{{ route('pwa.manifest.admin') }}">
+    <meta name="theme-color" content="#4a2c1d">
+    <link rel="apple-touch-icon" href="{{ route('pwa.icono', 180) }}">
+
     <script>
         (function() {
             let tema = null;

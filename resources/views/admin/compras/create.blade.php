@@ -71,8 +71,6 @@
         </div>
 
         <div class="row g-4 align-items-start">
-
-            {{-- IZQUIERDA: datos de la compra + productos --}}
             <div class="col-12 col-xl-5">
                 <div class="card">
                     <div class="card-header bg-white">
@@ -86,7 +84,6 @@
                 </div>
             </div>
 
-            {{-- DERECHA: detalle --}}
             <div class="col-12 col-xl-7">
                 <div class="card">
                     <div class="card-header bg-white">

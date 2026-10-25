@@ -32,6 +32,16 @@
                     <a class="nav-link {{ request()->routeIs('menu') ? 'active' : '' }}"
                         href="{{ route('menu') }}">Menú</a>
                 </li>
+
+                @if ($pedidosConfig?->disponible())
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('pedido.*') ? 'active' : '' }}"
+                            href="{{ route('pedido.create') }}">
+                            Mi pedido <span class="contador-carrito" style="display:none">0</span>
+                        </a>
+                    </li>
+                @endif
+                
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('contacto') ? 'active' : '' }}"
                         href="{{ route('contacto') }}">Contacto</a>
