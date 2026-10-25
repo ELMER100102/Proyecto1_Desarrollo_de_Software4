@@ -7950,15 +7950,16 @@ h1, h2, h3, h4, h5,
   .ftco-menu .f-menu-img {
     height: 300px; } }
 
-.menu-wrap .menu-img {
+/* .menu-wrap .menu-img {
   display: block;
-  width: 200px;
-  height: 200px;
+  width: 300px;
+  height: 260px;
   margin: 0 auto;
   -webkit-border-radius: 50%;
   -moz-border-radius: 50%;
   -ms-border-radius: 50%;
-  border-radius: 50%; }
+  border-radius: 5%;
+ }
 
 .menu-wrap .text h3 {
   font-size: 22px; }
@@ -7969,7 +7970,7 @@ h1, h2, h3, h4, h5,
   font-size: 16px;
   font-weight: 400; }
   .menu-wrap .text .price span {
-    color: #fac564; }
+    color: #fac564; } */
 
 .ftco-appointment {
   width: 100%;
@@ -8043,8 +8044,9 @@ h1, h2, h3, h4, h5,
 .appointment-form textarea.form-control {
   height: inherit !important; }
 
-.staff {
+.menu-wrap {
   padding: 25px;
+  margin-bottom: 25px;
   bordeR: 1px solid #5c3d03;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
@@ -8056,41 +8058,41 @@ h1, h2, h3, h4, h5,
   -ms-transition: all 0.3s ease;
   transition: all 0.3s ease; }
   @media (max-width: 767.98px) {
-    .staff {
+    .menu-wrap {
       margin-bottom: 30px; } }
-  .staff .info {
+  .menu-wrap .info {
     width: 100%; }
-    .staff .info h3 {
+    .smenu-wrap .info h3 {
       font-size: 15px;
       text-transform: uppercase; }
-      .staff .info h3 a {
+      .menu-wrap .info h3 a {
         color: #fac564; }
-    .staff .info span.position {
+    .menu-wrap .info span.position {
       display: block;
       margin-bottom: 15px;
       font-size: 12px;
       font-weight: 400;
       color: #cccccc; }
-  .staff .img {
-    width: 140px;
-    height: 140px;
+  .menu-wrap .img {
+    width: 240px;
+    height: 200px;
     border: 1px solid #8d5d05;
     margin: 0 auto;
-    -webkit-border-radius: 50%;
-    -moz-border-radius: 50%;
-    -ms-border-radius: 50%;
-    border-radius: 50%;
+    -webkit-border-radius: 10%;
+    -moz-border-radius: 10%;
+    -ms-border-radius: 10%;
+    border-radius: 10%;
     -moz-transition: all 0.3s ease;
     -o-transition: all 0.3s ease;
     -webkit-transition: all 0.3s ease;
     -ms-transition: all 0.3s ease;
     transition: all 0.3s ease; }
-  .staff:hover, .staff:focus {
+  .menu-wrap:hover, .menu-wrap:focus {
     -webkit-box-shadow: 0px 3px 66px -24px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 0px 3px 66px -24px rgba(0, 0, 0, 0.2);
     box-shadow: 0px 3px 66px -24px rgba(0, 0, 0, 0.2);
     border: 1px solid #fac564; }
-    .staff:hover .img, .staff:focus .img {
+    .menu-wrap:hover .img, .menu-wrap:focus .img {
       border: 1px solid #fac564; }
 
 .ftco-social a {
