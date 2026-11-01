@@ -7,3 +7,5 @@
 <link rel="stylesheet" href="{{ asset('assets/admin/css/app.css') }}">
 <link rel="stylesheet"
     href="{{ asset('assets/admin/css/tema-oscuro.css') }}?v={{ filemtime(public_path('assets/admin/css/tema-oscuro.css')) }}">
+{{-- Mensajes de validaciones.js (compartido con el sitio) --}}
+<link rel="stylesheet" href="{{ asset('assets/validaciones.css') }}?v={{ filemtime(public_path('assets/validaciones.css')) }}">

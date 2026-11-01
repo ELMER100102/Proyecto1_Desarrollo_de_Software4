@@ -92,6 +92,12 @@ class Pedido extends Model
         return self::SIGUIENTE[$this->estado] ?? null;
     }
 
+    /** Número interno para el kardex y los comprobantes: 000012 */
+    public function folio(): string
+    {
+        return str_pad($this->id_pedido, 6, '0', STR_PAD_LEFT);
+    }
+
     /** "Turno 12" (lo que el cliente ve y la cocina grita) */
     public function turnoVisible(): string
     {

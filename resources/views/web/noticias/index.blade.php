@@ -17,16 +17,18 @@
                     </p>
                 </div>
             </div>
-            <div class="d-flex flex-column gap-4">
+            <div class="noticias-lista d-flex flex-column">
                 @forelse ($noticias as $item)
                     <article class="row g-3 pb-4 mb-4 border-bottom">
                         <div class="col-12 col-md-3">
-                            <img src="{{ asset('storage/' . $item->imagen) }}" class="img-fluid rounded" alt="Noticia">
+                            <img src="{{ asset('storage/' . $item->imagen) }}" class="img-fluid" alt="{{ $item->titulo }}">
                         </div>
                         <div class="col-12 col-md-9">
-                            <h3 class="h5">{{ $item->titulo }}</h3>
-                            <p>{{ $item->contenido }}</p>
-                            <a href="{{ route('noticia', $item->id_noticia) }}" class="btn btn-primary btn-sm">Leer más</a>
+                            <h3 class="noticias-lista__titulo">{{ $item->titulo }}</h3>
+                            <p class="noticias-lista__resumen">{{ $item->contenido }}</p>
+                            {{-- Mismo efecto que los enlaces de la navegación (.enlace-nav) --}}
+                            <a href="{{ route('noticia', $item->id_noticia) }}" class="enlace-nav"
+                                aria-label="Leer más: {{ $item->titulo }}">Leer más <span aria-hidden="true">&rarr;</span></a>
                         </div>
                     </article>
                 @empty

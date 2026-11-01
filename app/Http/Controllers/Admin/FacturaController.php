@@ -6,15 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Contacto;
 use App\Models\Factura;
 use App\Models\Producto;
+use App\Services\FacturaService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
+/** Comprobantes de la caja (POS). La lógica de emitir y anular está en FacturaService. */
 class FacturaController extends Controller
 {
-
     public function index()
     {
         $data = Factura::orderByDesc('numero')->get();
@@ -46,14 +46,14 @@ class FacturaController extends Controller
                 'categoria' => $p->categoria->nombre ?? '',
                 'precio'    => (float) $p->precio,
                 'stock'     => $p->stock,   // null = sin control
-                'impuesto'  => (float) ($p->impuesto ?? Factura::IVA_POR_DEFECTO),
+                'impuesto'  => $p->tarifaIva(),
             ])
             ->values();
 
         return view('admin.facturas.create', compact('productos'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, FacturaService $facturas): RedirectResponse
     {
         $datos = $request->validate([
             'tipo_pago'           => 'required|in:contado,credito',
@@ -67,88 +67,14 @@ class FacturaController extends Controller
             'items.min'           => 'Agregue al menos un producto a la venta.',
         ]);
 
-        // Si el mismo producto viene dos veces, se suman las cantidades
+        // Si el mismo producto viene dos veces, se suman las cantidades: [id_producto => cantidad]
         $cantidades = collect($datos['items'])
             ->groupBy('id_producto')
-            ->map(fn ($grupo) => (int) $grupo->sum('cantidad'));
+            ->map(fn ($grupo) => (int) $grupo->sum('cantidad'))
+            ->all();
 
         try {
-            $factura = DB::transaction(function () use ($datos, $cantidades) {
-
-                // Bloquea las filas para que dos ventas simultáneas no descuenten el mismo stock
-                $productos = Producto::whereIn('id_producto', $cantidades->keys())
-                    ->lockForUpdate()
-                    ->get()
-                    ->keyBy('id_producto');
-
-                $subtotal  = 0;
-                $total     = 0;
-                $lineas    = [];
-                $descontar = [];   // [producto, cantidad]: se aplica cuando ya existe el número de factura
-
-                foreach ($cantidades as $id => $cantidad) {
-                    $p = $productos[$id];
-
-                    if (! $p->disponible) {
-                        throw new DomainException("«{$p->nombre}» está marcado como agotado.");
-                    }
-                    if ($p->stock !== null && $p->stock < $cantidad) {
-                        throw new DomainException(
-                            "Stock insuficiente de «{$p->nombre}»: quedan {$p->stock} y se piden {$cantidad}. " .
-                            'Si ya horneó más, actualice el stock del producto.'
-                        );
-                    }
-
-                    $tarifa     = (float) ($p->impuesto ?? Factura::IVA_POR_DEFECTO);
-                    $totalLinea = round($p->precio * $cantidad, 2);
-                    $base       = round($totalLinea / (1 + $tarifa / 100), 2);
-
-                    $subtotal += $base;
-                    $total    += $totalLinea;
-
-                    $controlaStock = $p->stock !== null;
-
-                    $lineas[] = [
-                        'id_producto'         => $p->id_producto,
-                        'descripcion'         => $p->nombre,
-                        'cantidad'            => $cantidad,
-                        'precio'              => $p->precio,
-                        'impuesto_porcentaje' => $tarifa,
-                        'subtotal'            => $totalLinea,
-                        'stock_descontado'    => $controlaStock,
-                    ];
-
-                    if ($controlaStock) {
-                        $descontar[] = [$p, $cantidad];
-                    }
-                }
-
-                $subtotal = round($subtotal, 2);
-                $total    = round($total, 2);
-
-                // Consecutivo: dentro de la transacción y con bloqueo
-                $numero = ((int) Factura::lockForUpdate()->max('numero')) + 1;
-
-                $factura = Factura::create([
-                    'numero'         => $numero,
-                    'fecha'          => now(),
-                    'cliente'        => $datos['cliente'] ?: 'Cliente de contado',
-                    'tipo_pago'      => $datos['tipo_pago'],
-                    'subtotal'       => $subtotal,
-                    'total_impuesto' => round($total - $subtotal, 2),
-                    'total'          => $total,
-                    'estado'         => 'emitida',
-                ]);
-
-                $factura->detalles()->createMany($lineas);
-
-                // Descuenta el stock y deja el movimiento anotado (regla C incluida)
-                foreach ($descontar as [$p, $cantidad]) {
-                    $p->moverStock(-$cantidad, 'venta', 'Factura #' . str_pad($numero, 6, '0', STR_PAD_LEFT));
-                }
-
-                return $factura;
-            });
+            $factura = $facturas->vender((string) ($datos['cliente'] ?? ''), $datos['tipo_pago'], $cantidades);
         } catch (DomainException $e) {
             // Error de negocio (sin stock, agotado): vuelve al formulario conservando lo digitado
             return back()->withInput()->with('error', $e->getMessage());
@@ -160,54 +86,19 @@ class FacturaController extends Controller
             ->with('imprimir', $factura->id_factura);
     }
 
-    public function anular(Factura $factura): RedirectResponse
+    public function anular(Factura $factura, FacturaService $facturas): RedirectResponse
     {
         if ($factura->estaAnulada()) {
             return back()->with('error', 'Ese comprobante ya estaba anulado.');
         }
 
-        DB::transaction(function () use ($factura) {
-            $factura->load('detalles');
-
-            foreach ($factura->detalles as $d) {
-                // Solo devuelve stock si esa línea lo había descontado
-                if (! $d->stock_descontado || ! $d->id_producto) {
-                    continue;
-                }
-
-                $p = Producto::lockForUpdate()->find($d->id_producto);
-
-                // Devuelve el stock (si el producto sigue controlándolo) y anota el movimiento
-                $p?->moverStock(
-                    $d->cantidad,
-                    'anulacion',
-                    'Anulación factura #' . str_pad($factura->numero, 6, '0', STR_PAD_LEFT)
-                );
-            }
-
-            $factura->update(['estado' => 'anulada']);
-        });
+        $facturas->anular($factura);
 
         return back()->with('success', "Comprobante #{$factura->numero} anulado y stock devuelto.");
     }
 
-
-    private function datosNegocio(): array
-    {
-        $c = Contacto::first();
-
-        $logo = $c?->logo ? public_path('storage/' . $c->logo) : null;
-
-        return [
-            'nombre'    => $c?->nombre_empresa ?: config('negocio.nombre'),
-            'direccion' => $c?->direccion ?: config('negocio.direccion'),
-            'telefono'  => $c?->telefono ?: config('negocio.telefono'),
-            'correo'    => $c?->correo,
-            'logo'      => ($logo && is_file($logo)) ? $logo : null,   // ruta en disco, la que pide Dompdf
-            'cedula'    => config('negocio.cedula'),                    // no existe en la tabla contacto
-            'leyenda'   => config('negocio.leyenda'),
-        ];
-    }
+    // ------------------------------------------------------------------
+    // PDF
 
     public function pdfCarta(Factura $factura)
     {
@@ -234,5 +125,23 @@ class FacturaController extends Controller
         ])
             ->setPaper([0, 0, 226.77, $alto], 'portrait')
             ->stream("comprobante-{$factura->numero}-ticket.pdf");
+    }
+
+    /** Encabezado del comprobante: datos de la tabla contacto, con respaldo en config/negocio.php */
+    private function datosNegocio(): array
+    {
+        $c = Contacto::actual();
+
+        $logo = $c?->logo ? public_path('storage/' . $c->logo) : null;
+
+        return [
+            'nombre'    => $c?->nombre_empresa ?: config('negocio.nombre'),
+            'direccion' => $c?->direccion ?: config('negocio.direccion'),
+            'telefono'  => $c?->telefono ?: config('negocio.telefono'),
+            'correo'    => $c?->correo,
+            'logo'      => ($logo && is_file($logo)) ? $logo : null,   // ruta en disco, la que pide Dompdf
+            'cedula'    => config('negocio.cedula'),                    // no existe en la tabla contacto
+            'leyenda'   => config('negocio.leyenda'),
+        ];
     }
 }

@@ -1,0 +1,784 @@
+/* =====================================================================
+   panel-pedido.css · Botón del carrito (cabecera) y panel lateral del pedido.
+   Solo existen en la página Mi pedido. Va después de modal-pedido.css
+   (reutiliza su bloqueo de scroll: html.modal-abierto).
+   ===================================================================== */
+
+:root {
+    --panel-ancho: 420px;
+}
+
+
+/* ---------------------------------------------------------------------
+   BOTÓN DEL CARRITO EN LA CABECERA
+   Vacío: píldora con borde de 1px y solo el icono.
+   Con productos: rellena con el acento y la cantidad en crema.
+   --------------------------------------------------------------------- */
+#ftco-navbar .carrito-boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    margin-left: 24px;
+    padding: 0 14px;
+    background: transparent;
+    border: 1px solid var(--onyx);
+    border-radius: 999px;
+    color: var(--onyx);
+    cursor: pointer;
+    transition: background-color var(--t-hover) var(--ease),
+                border-color var(--t-hover) var(--ease),
+                color var(--t-hover) var(--ease);
+}
+#ftco-navbar .carrito-boton.tiene-productos {
+    background: var(--acento);
+    border-color: var(--acento);
+    color: var(--crema);   /* 7.9:1 sobre el rojo */
+}
+#ftco-navbar .carrito-boton:focus-visible {
+    outline: 2px solid var(--onyx) !important;
+    outline-offset: 3px;
+}
+.carrito-boton__bolsa {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+/* El número es texto, no globito (anula el estilo de .contador-carrito del tema) */
+#ftco-navbar .carrito-boton .contador-carrito {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1;
+}
+/* "Latido" breve al agregar un producto */
+#ftco-navbar .carrito-boton.late {
+    animation: carrito-late .4s var(--ease);
+}
+@keyframes carrito-late {
+    50% { transform: scale(1.08); }
+}
+
+/* Celular: el botón queda visible junto a "Menu", no dentro del menú desplegable */
+@media (max-width: 991.98px) {
+    #ftco-navbar .carrito-boton {
+        order: 1;
+        margin-left: 0;
+        margin-right: 8px;
+    }
+    #ftco-navbar .navbar-toggler {
+        order: 2;
+    }
+    #ftco-navbar .navbar-collapse {
+        order: 3;
+    }
+}
+
+
+/* ---------------------------------------------------------------------
+   PANEL LATERAL
+   --------------------------------------------------------------------- */
+/* La plantilla (normalize) pone dialog { display: block }: sin esto se vería cerrado */
+.panel-pedido:not([open]) {
+    display: none;
+}
+.panel-pedido {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(var(--panel-ancho), 100%);
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: var(--crema);
+    border: 0;
+    border-left: var(--linea);
+    border-radius: 0;
+    color: var(--onyx);
+    transform: translateX(100%);
+    transition: transform var(--modal-entrada, .45s) var(--ease);
+}
+.panel-pedido[open] {
+    display: flex;
+}
+.panel-pedido.es-abierto {
+    transform: none;
+}
+.panel-pedido::backdrop {
+    background: rgba(41, 38, 34, 0);
+    transition: background-color .4s var(--ease);
+}
+.panel-pedido.es-abierto::backdrop,
+.panel-pedido.fondo-inmediato::backdrop {
+    background: rgba(41, 38, 34, .55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+/* Viniendo de la ventana de producto: el fondo ya estaba oscuro, no parpadea */
+.panel-pedido.fondo-inmediato::backdrop {
+    transition: none;
+}
+
+.panel-pedido__marco {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Cabecera */
+.panel-pedido__cabecera {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 12px 12px 20px;
+    border-bottom: var(--linea);
+}
+.panel-pedido__icono {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--parchment);
+}
+.panel-pedido__icono svg,
+.panel-pedido__vacio svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+.panel-pedido__titulo {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+.panel-pedido__titulo:focus {
+    outline: none;
+}
+.panel-pedido__cerrar {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    color: var(--onyx);
+    cursor: pointer;
+}
+.panel-pedido__cerrar svg,
+.panel-pedido .modal-pedido__paso svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+}
+.panel-pedido__cerrar:focus-visible,
+.panel-pedido__finalizar:focus-visible,
+.panel-pedido .modal-pedido__paso:focus-visible {
+    outline: 2px solid var(--onyx) !important;
+    outline-offset: 2px;
+}
+
+/* Cuerpo con scroll */
+.panel-pedido__cuerpo {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Líneas del pedido */
+.panel-pedido__lineas {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.panel-linea {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: var(--linea);
+    animation: panel-linea-entra .4s var(--ease) both;
+    animation-delay: calc(var(--i, 0) * 40ms);
+}
+@keyframes panel-linea-entra {
+    from { opacity: 0; transform: translateY(8px); }
+}
+/* Colapso al quitar una línea (altura y opacidad, .3s) */
+.panel-linea.se-va {
+    overflow: hidden;
+    animation: none;
+    transition: height .3s var(--ease), opacity .3s var(--ease),
+                padding .3s var(--ease), border-color .3s var(--ease);
+}
+.panel-linea__foto {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--linen);
+}
+.panel-linea__foto img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.panel-inicial {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 30px;
+    text-transform: uppercase;
+    color: var(--onyx);
+}
+.panel-linea__texto {
+    min-width: 0;
+}
+.panel-linea__nombre {
+    display: block;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.panel-linea__precio {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+    color: var(--espresso);   /* 6.1:1 sobre crema */
+}
+.panel-linea__quitar {
+    margin-top: 4px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--acento);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+/* Nota por producto */
+.panel-linea__nota {
+    display: block;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.35;
+    color: var(--onyx);
+}
+.panel-linea__editar {
+    min-height: 32px;
+    margin-top: 2px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--onyx);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: rgba(44, 44, 44, .35);
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+.panel-linea__editar:hover,
+.panel-linea__editar:focus-visible {
+    text-decoration-color: currentColor;
+}
+.panel-linea__editor {
+    display: flex;
+    grid-column: 1 / -1;
+    flex-direction: column;
+    gap: 6px;
+}
+.panel-linea__acciones {
+    display: flex;
+    gap: 8px;
+}
+
+.panel-linea--no-disponible .panel-linea__nombre {
+    color: var(--espresso);
+}
+.panel-linea__control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.panel-linea__control output {
+    min-width: 2ch;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Vacío */
+.panel-pedido__vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 64px 24px;
+    text-align: center;
+}
+.panel-pedido__vacio[hidden] {
+    display: none;
+}
+.panel-pedido__vacio p {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+}
+
+/* ¿Algo más? */
+.panel-pedido__algo {
+    padding: 24px 20px;
+}
+.panel-pedido__subtitulo {
+    margin: 0 0 14px;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+.panel-pedido__sugerencias {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.panel-sugerencia {
+    min-width: 0;
+    animation: panel-linea-entra .4s var(--ease) both;
+}
+.panel-sugerencia__foto {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--linen);
+}
+.panel-sugerencia__foto img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.panel-sugerencia .modal-pedido__paso {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+}
+.panel-sugerencia__nombre {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+.panel-sugerencia__precio {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--espresso);
+}
+.panel-sugerencia .icono-check,
+.panel-sugerencia .es-agregado .icono-mas {
+    display: none;
+}
+.panel-sugerencia .es-agregado .icono-check {
+    display: block;
+}
+
+/* Pie fijo */
+.panel-pedido__pie {
+    flex: none;
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-top: var(--linea);
+    background: var(--crema);
+}
+.panel-pedido__pie[hidden] {
+    display: none;
+}
+.panel-pedido__total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 700;
+}
+.panel-pedido__total small {
+    margin-left: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--espresso);
+}
+/* Mismo botón relleno que la ventana de pedido (EXCEPCIÓN documentada al DESIGN.md:
+   la acción principal del pedido usa el acento de marca) */
+.panel-pedido__finalizar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 24px;
+    background: var(--acento);
+    border: 0;
+    border-radius: 999px;
+    color: var(--crema);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color var(--t-hover) var(--ease);
+}
+.panel-pedido__finalizar:hover {
+    background: var(--acento-hover, #761f19);
+}
+/* El total cambia con un fundido y un desplazamiento mínimo, sin mover el botón */
+.panel-pedido__finalizar-total {
+    display: inline-block;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.panel-pedido__finalizar-total.cambia {
+    animation: panel-total .3s var(--ease);
+}
+@keyframes panel-total {
+    from { opacity: 0; transform: translateY(4px); }
+}
+.panel-pedido__aviso {
+    margin: 10px 0 0;
+    font-size: 13px;
+    text-align: center;
+    color: var(--espresso);
+}
+
+
+/* ---------------------------------------------------------------------
+   PASOS DEL PANEL: 1 Tu pedido · 2 Tus datos
+   --------------------------------------------------------------------- */
+.panel-indicador {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 10px 20px;
+    list-style: none;
+    border-bottom: var(--linea);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--espresso);   /* paso inactivo: 6.1:1 sobre crema */
+}
+.panel-indicador [aria-current="step"] {
+    color: var(--onyx);
+    font-weight: 700;
+}
+.panel-pedido__pasos {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+.panel-pedido__paso {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+.panel-pedido__paso[hidden] {
+    display: none;
+}
+/* Deslizamiento horizontal con fundido cruzado (~.35s en total) */
+.panel-pedido__paso.sale-izq { animation: paso-sale-izq .17s var(--ease) forwards; }
+.panel-pedido__paso.sale-der { animation: paso-sale-der .17s var(--ease) forwards; }
+.panel-pedido__paso.entra-der { animation: paso-entra-der .18s var(--ease); }
+.panel-pedido__paso.entra-izq { animation: paso-entra-izq .18s var(--ease); }
+@keyframes paso-sale-izq { to { opacity: 0; transform: translateX(-24px); } }
+@keyframes paso-sale-der { to { opacity: 0; transform: translateX(24px); } }
+@keyframes paso-entra-der { from { opacity: 0; transform: translateX(24px); } }
+@keyframes paso-entra-izq { from { opacity: 0; transform: translateX(-24px); } }
+
+/* Avisos de error del servidor (arriba del paso) */
+.panel-pedido__error {
+    margin: 16px 20px 0;
+    padding: 12px 14px;
+    border: 1px solid var(--acento);
+    border-radius: var(--radio-control);
+    color: var(--acento);   /* 7.9:1 sobre crema */
+    font-size: 14px;
+    font-weight: 500;
+}
+.panel-pedido__error p,
+.panel-pedido__error ul {
+    margin: 0;
+}
+.panel-pedido__error ul {
+    padding-left: 18px;
+}
+.panel-datos .panel-pedido__error {
+    margin: 0;
+}
+
+/* Pie del paso 2: Volver + Enviar */
+.panel-pedido__botones {
+    display: flex;
+    gap: 10px;
+}
+.panel-pedido__botones .btn {
+    flex: none;
+    border-radius: 999px !important;
+}
+.panel-pedido__botones .panel-pedido__finalizar {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+a.panel-pedido__finalizar,
+a.panel-pedido__finalizar:hover,
+a.panel-pedido__finalizar:focus {
+    color: var(--crema);
+    text-decoration: none !important;
+}
+.panel-pedido__finalizar:disabled {
+    opacity: .75;
+    cursor: progress;
+}
+
+
+/* ---------------------------------------------------------------------
+   FORMULARIO "TUS DATOS"
+   --------------------------------------------------------------------- */
+.panel-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+}
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.campo[hidden] {
+    display: none;
+}
+/* Aparecer / desaparecer según el tipo (altura y opacidad, .3s) */
+.campo.se-mueve {
+    overflow: hidden;
+    transition: height .3s var(--ease), opacity .3s var(--ease);
+}
+.campo__etiqueta {
+    margin: 0;
+    padding: 0;
+    font-family: var(--sans);
+    font-size: 13px;   /* el brief pedía 12px; 13px es el mínimo legible del sitio */
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--onyx);
+}
+.campo__control {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    background: var(--crema);
+    border: var(--linea);
+    border-radius: var(--radio-control);
+    color: var(--onyx);
+    font-family: var(--sans);
+    font-size: 16px;   /* 16px o más: iOS no hace zoom al enfocar */
+    line-height: 1.4;
+}
+textarea.campo__control {
+    resize: vertical;
+}
+.campo__control:focus {
+    outline: none;
+    border-color: var(--acento);
+    box-shadow: 0 0 0 2px rgba(139, 42, 34, .35);   /* anillo de foco, no sombra decorativa */
+}
+.campo__control[aria-invalid="true"] {
+    border-color: var(--acento);
+}
+.campo__ayuda {
+    margin: 0;
+    font-size: 13px;
+    color: var(--espresso);
+}
+.campo__error {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--acento);
+}
+.campo__error[hidden] {
+    display: none;
+}
+
+/* Tipo de pedido: radios con apariencia de tarjetas pequeñas */
+.campo__opciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+    gap: 8px;
+}
+.opcion-tipo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin: 0;
+    padding: 10px 12px;
+    border: var(--linea);
+    border-radius: var(--radio-control);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color var(--t-hover) var(--ease), background-color var(--t-hover) var(--ease);
+}
+.opcion-tipo input {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--acento);
+}
+.opcion-tipo:has(input:checked) {
+    border-color: var(--onyx);
+    background: var(--parchment);
+}
+.opcion-tipo:has(input:focus-visible) {
+    outline: 2px solid var(--onyx);
+    outline-offset: 2px;
+}
+
+/* Nota general: enlace plegable */
+.campo__desplegar {
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--onyx);
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-decoration-color: rgba(44, 44, 44, .35);
+    text-underline-offset: 4px;
+    cursor: pointer;
+}
+.campo__desplegar[aria-expanded="true"] {
+    display: none;
+}
+#pNotaCaja {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+#pNotaCaja[hidden] {
+    display: none;
+}
+
+.campo__casilla {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    margin: 0;
+    font-size: 14px;
+    cursor: pointer;
+}
+.campo__casilla input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--acento);
+}
+
+/* Con el panel funcionando, el formulario de la página es solo el respaldo sin JavaScript */
+html.pedido-con-panel #formPedido {
+    display: none;
+}
+
+/* Nota por producto en la tabla de "Mi pedido" y en el seguimiento */
+.pedido-nota {
+    font-style: italic;
+    color: var(--onyx);
+}
+
+
+/* ---------------------------------------------------------------------
+   MOVIMIENTO REDUCIDO: sin animaciones
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .panel-pedido,
+    .panel-pedido::backdrop,
+    .panel-linea.se-va {
+        transition: none !important;
+    }
+    .panel-linea,
+    .panel-sugerencia,
+    .panel-pedido__finalizar-total.cambia,
+    .panel-pedido__paso,
+    #ftco-navbar .carrito-boton.late {
+        animation: none !important;
+    }
+    .campo.se-mueve,
+    .opcion-tipo {
+        transition: none !important;
+    }
+}

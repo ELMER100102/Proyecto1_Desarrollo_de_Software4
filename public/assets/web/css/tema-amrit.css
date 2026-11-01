@@ -1,0 +1,789 @@
+/* =====================================================================
+   tema-amrit.css · Tema visual del sitio público ("spiced parchment gallery").
+   Se carga DESPUÉS de style.css (ver web/parts/css.blade.php) y solo
+   sobrescribe aspecto: no cambia ids, clases ni data-* que usa el JS.
+   El admin no carga este archivo.
+   ===================================================================== */
+
+
+/* ---------------------------------------------------------------------
+   1. VARIABLES
+   --------------------------------------------------------------------- */
+:root {
+    /* Colores */
+    --parchment: #d8cbb8;        /* fondo */
+    --linen: #bfb4a3;            /* secciones alternas */
+    --warm-stone: #b6ab9c;       /* líneas de 1px */
+    --walnut: #978e81;           /* SOLO decorativo: no da contraste para texto */
+    --espresso: #615b53;         /* texto secundario grande (≥ 24px) */
+    --espresso-texto: #524c45;   /* espresso oscurecido: 5.3:1 sobre parchment, para texto pequeño */
+    --onyx: #2c2c2c;             /* texto principal y superficies oscuras */
+    --midnight-roast: #292622;   /* overlays de fotos */
+    --acento: #8b2a22;           /* rojo de marca: único acento, usar muy poco */
+    --crema: #fbf3ea;            /* texto sobre fotos y paneles oscuros */
+    --cafe-profundo: #4a2c1d;    /* paneles oscuros y fondo de fotos que faltan */
+
+    /* Capa uniforme sobre fotos con texto encima. El valor sale de una MEDICIÓN DE
+       CONTRASTE con las fotos reales (texto crema sobre foto + capa, con la sombra de abajo):
+       - tarjetas del inicio (ya retiradas): .60 bastaba (mín. 4.69:1);
+       - portada de la noticia: con .60 dos fotos quedaban en 4.33–4.45:1 en el párrafo;
+         con .62 las 7 noticias pasan de 4.5:1 a 375, 768 y 1440px (mín. 4.56).
+       Revisar (y medir otra vez) si se agregan fotos muy claras. No bajar de .60 sin aprobación. */
+    --velo-noticia: .62;
+    /* Refuerzo de legibilidad del texto sobre foto. Excepción aprobada a la regla
+       "sin sombras" del DESIGN.md: solo en textos sobre fotos. */
+    --sombra-texto-foto: 0 1px 12px rgba(41, 38, 34, .45);
+
+    --overlay-foto: rgba(41, 38, 34, .7);
+    --linea: 1px solid var(--warm-stone);
+    --linea-oscura: 1px solid rgba(182, 171, 156, .35);   /* warm-stone sobre fondo oscuro */
+
+    /* Tipografía */
+    --serif: "Cormorant Garamond", "Times New Roman", serif;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    --titulo-display: clamp(48px, 9vw, 115px);
+    --titulo-grande: clamp(40px, 6vw, 69px);
+    --titulo: clamp(34px, 4.6vw, 50px);
+    --titulo-chico: clamp(22px, 2.2vw, 26px);
+
+    /* Formas y espacios */
+    --radio-control: 3px;        /* botones, inputs, etiquetas */
+    --pad-tarjeta: 28px;
+    --seccion: clamp(72px, 11vw, 150px);
+
+    /* Movimiento */
+    --curva: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --dur: .4s;
+}
+
+
+/* ---------------------------------------------------------------------
+   2. BASE
+   --------------------------------------------------------------------- */
+html {
+    background: var(--parchment);   /* evita el flash blanco entre páginas */
+}
+
+body {
+    background: var(--parchment) none !important;   /* quita la foto fija de la plantilla */
+    color: var(--onyx);
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    text-align: left;
+    -webkit-font-smoothing: antialiased;
+    /* La aparición al cargar la hace el telón de efectos.css */
+}
+
+/* La plantilla pinta todos los span en gris claro */
+span {
+    color: inherit;
+}
+
+strong, b {
+    font-weight: 700;
+}
+
+p {
+    color: inherit;
+}
+
+small, .small {
+    font-size: 13px;
+}
+
+.text-muted {
+    color: var(--espresso-texto) !important;
+}
+
+::selection {
+    background: var(--onyx);
+    color: var(--parchment);
+}
+
+/* Enlaces */
+a {
+    color: var(--onyx);
+    transition: color var(--dur) var(--curva), opacity var(--dur) var(--curva);
+}
+a:hover,
+a:focus,
+a:active {
+    color: var(--onyx);
+}
+
+/* Enlaces dentro de texto: subrayado fino */
+main p a:not(.btn),
+main li a:not(.btn) {
+    text-decoration: underline !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 3px;
+}
+
+:focus-visible {
+    outline: 1px solid currentColor !important;
+    outline-offset: 3px;
+}
+
+/* Títulos: serif fina, mayúsculas, interlineado apretado. Nunca en negrita. */
+h1, h2, h3, h4,
+.h1, .h2, .h3, .h4 {
+    font-family: var(--serif);
+    font-weight: 300 !important;
+    text-transform: uppercase;
+    line-height: .9;
+    letter-spacing: -0.03em;
+    color: var(--onyx);
+    overflow-wrap: break-word;
+}
+h1, .h1 { font-size: var(--titulo-display); letter-spacing: -0.04em; line-height: .85; }
+h2, .h2 { font-size: var(--titulo-grande);  letter-spacing: -0.04em; }
+h3, .h3 { font-size: var(--titulo-chico);   letter-spacing: -0.035em; line-height: 1; }
+h4, .h4 { font-size: 22px;                   letter-spacing: -0.035em; line-height: 1; }
+
+/* h5/h6: rótulos pequeños en sans (la serif no baja de 22px) */
+h5, h6,
+.h5, .h6 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: var(--onyx);
+}
+
+/* Secciones: aire editorial */
+.ftco-section {
+    padding: var(--seccion) 0;
+}
+
+/* Sin animaciones al hacer scroll: lo marcado con ftco-animate se ve desde el inicio */
+.ftco-animate,
+.ftco-animated {
+    opacity: 1 !important;
+    visibility: visible !important;
+    animation: none !important;
+}
+
+
+/* ---------------------------------------------------------------------
+   3. BOTONES (fantasma: fondo transparente, borde 1px, 3px de radio)
+   Por defecto oscuros (para el fondo claro). En zonas oscuras se invierten.
+   --------------------------------------------------------------------- */
+body .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5em;
+    min-height: 44px;
+    padding: 12px 24px;
+    background: transparent !important;
+    border: 1px solid var(--onyx) !important;
+    border-radius: var(--radio-control) !important;
+    box-shadow: none !important;
+    color: var(--onyx) !important;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    transition: color var(--dur) var(--curva),
+                background-color var(--dur) var(--curva),
+                border-color var(--dur) var(--curva);
+}
+/* .btn-primary repetido: gana a ".btn.btn-primary:hover { background: transparent !important }" de style.css */
+body .btn:hover,
+body .btn:focus-visible,
+body .btn:active,
+body .btn.btn-primary:hover,
+body .btn.btn-primary:focus-visible,
+body .btn.btn-primary:active {
+    background: var(--onyx) !important;
+    border-color: var(--onyx) !important;
+    color: var(--parchment) !important;
+}
+body .btn:disabled,
+body .btn.disabled {
+    opacity: .5;
+}
+body .btn-sm {
+    padding: 10px 16px;
+    font-size: 13px;
+}
+
+/* Botones sobre superficies oscuras (pie, fotos con overlay) */
+.ftco-footer .btn,
+.home-slider .btn {
+    border-color: var(--parchment) !important;
+    color: var(--parchment) !important;
+}
+.ftco-footer .btn:hover,
+.ftco-footer .btn:focus-visible,
+.home-slider .btn:hover,
+.home-slider .btn:focus-visible,
+body .ftco-footer .btn.btn-primary:hover,
+body .home-slider .btn.btn-primary:hover {
+    background: var(--parchment) !important;
+    border-color: var(--parchment) !important;
+    color: var(--onyx) !important;
+}
+
+
+/* ---------------------------------------------------------------------
+   4. NAVEGACIÓN
+   Páginas interiores: barra sobre parchment con línea inferior.
+   Portada (hay .home-slider): barra transparente flotando sobre la foto.
+   --------------------------------------------------------------------- */
+#ftco-navbar {
+    background: var(--parchment) !important;
+    border-bottom: var(--linea);
+    box-shadow: none !important;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    z-index: 1030;
+}
+
+/* Marca: logo + nombre en serif */
+#ftco-navbar .navbar-brand {
+    color: var(--onyx);
+    margin-right: 24px;
+    min-height: 44px;
+}
+#ftco-navbar .navbar-brand > div {   /* el div lleva clases col-* de la plantilla */
+    flex: none;
+    width: auto;
+    max-width: none;
+    padding: 0;
+    text-align: left !important;
+}
+#ftco-navbar .navbar-brand .subheading {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: inherit;
+}
+
+/* Enlaces */
+#ftco-navbar .navbar-nav > .nav-item > .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--onyx) !important;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+}
+
+/* Enlace de acción con el mismo aspecto y efecto que la navegación
+   (noticias: "Leer más", "Volver"; paginación). Comparte la raya de abajo. */
+.enlace-nav,
+.block-27 .page-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: .5em;
+    min-height: 44px;
+    color: var(--onyx) !important;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    text-decoration: none !important;
+}
+
+/* Raya inferior que crece al pasar el mouse (solo transform) */
+#ftco-navbar .navbar-nav > .nav-item > .nav-link::after,
+.enlace-nav::after,
+.block-27 .page-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--dur) var(--curva);
+}
+#ftco-navbar .navbar-nav > .nav-item > .nav-link:hover::after,
+#ftco-navbar .navbar-nav > .nav-item > .nav-link:focus-visible::after,
+.enlace-nav:hover::after,
+.enlace-nav:focus-visible::after,
+.block-27 .page-item:not(.disabled) .page-link:hover::after,
+.block-27 .page-item:not(.disabled) .page-link:focus-visible::after {
+    transform: scaleX(1);
+}
+/* Estado activo: el acento rojo */
+#ftco-navbar .navbar-nav > .nav-item > .nav-link.active::after,
+.block-27 .page-item.active .page-link::after {
+    background: var(--acento);
+    transform: scaleX(1);
+}
+
+/* Globito del carrito: plano, 3px */
+#ftco-navbar .contador-carrito {
+    min-width: 1.6em;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: var(--radio-control);
+    background: var(--acento);
+    color: var(--parchment);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+}
+
+/* Botón "Menu" del celular */
+#ftco-navbar .navbar-toggler {
+    min-height: 44px;
+    padding: 8px 16px;
+    border: 1px solid currentColor !important;
+    border-radius: var(--radio-control);
+    color: var(--onyx) !important;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+}
+#ftco-navbar .navbar-toggler .oi {
+    display: none;   /* el CSS de los íconos open-iconic no se carga */
+}
+
+/* Escritorio: separación entre enlaces */
+@media (min-width: 992px) {
+    #ftco-navbar .navbar-nav > .nav-item > .nav-link {
+        padding: 0 !important;
+        margin-left: 28px;
+    }
+}
+
+/* Celular / tablet: menú desplegable legible, áreas táctiles de 44px */
+@media (max-width: 991.98px) {
+    #ftco-navbar {
+        position: relative;
+    }
+    #ftco-navbar > .container {
+        flex-wrap: wrap;
+    }
+    /* La marca cede espacio para que "Menu" quede en la misma línea */
+    #ftco-navbar .navbar-brand {
+        flex: 1 1 0;
+        min-width: 0;
+        margin-right: 12px;
+        white-space: normal;
+    }
+    #ftco-navbar .navbar-brand > div {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    #ftco-navbar .navbar-brand .subheading {
+        font-size: 22px;
+        display: block;
+    }
+    #ftco-navbar .navbar-brand img {
+        flex: none;
+    }
+    #ftco-navbar .navbar-collapse {
+        margin-top: 8px;
+    }
+    #ftco-navbar .navbar-nav {
+        padding: 8px 0 16px;
+    }
+    #ftco-navbar .navbar-nav > .nav-item {
+        border-top: var(--linea);
+    }
+    #ftco-navbar .navbar-nav > .nav-item > .nav-link {
+        padding: 12px 0 !important;
+    }
+    #ftco-navbar .navbar-nav > .nav-item > .nav-link::after {
+        bottom: 6px;
+        right: auto;
+        width: 40px;
+    }
+    /* Apertura: sin animar la altura, el contenido aparece con opacidad y transform */
+    #ftco-navbar .collapsing {
+        transition: none !important;
+    }
+    #ftco-navbar .navbar-collapse.show .navbar-nav {
+        animation: tema-desplegar var(--dur) var(--curva) both;
+    }
+}
+
+@keyframes tema-desplegar {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* Barra fija al hacer scroll (la pone main.js): entra con transform, no con margin */
+#ftco-navbar.scrolled {
+    position: fixed;
+    margin-top: 0 !important;
+    background: var(--parchment) !important;
+    transform: translateY(-100%);
+    transition: transform var(--dur) var(--curva) !important;
+}
+#ftco-navbar.scrolled.awake {
+    transform: none;
+}
+#ftco-navbar.scrolled .nav-link {
+    color: var(--onyx) !important;
+}
+
+/* Páginas interiores (sin foto de portada): la barra es sticky desde el principio.
+   Antes pasaba a position: fixed al bajar ~150px (main.js) y el contenido subía de golpe
+   lo que mide la barra. Sticky no sale del flujo: no hay salto y siempre está visible. */
+body:not(:has(.home-slider, .noticia-hero)) #ftco-navbar,
+body:not(:has(.home-slider, .noticia-hero)) #ftco-navbar.scrolled {
+    position: sticky !important;
+    top: 0;
+    transform: none;
+}
+
+/* --- Portada y detalle de noticia: barra transparente sobre la foto --- */
+body:has(.home-slider, .noticia-hero) #ftco-navbar:not(.scrolled) {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: transparent !important;
+    border-bottom-color: rgba(216, 203, 184, .35);
+}
+body:has(.home-slider, .noticia-hero) #ftco-navbar:not(.scrolled) .navbar-brand,
+body:has(.home-slider, .noticia-hero) #ftco-navbar:not(.scrolled) .navbar-toggler,
+body:has(.home-slider, .noticia-hero) #ftco-navbar:not(.scrolled) .navbar-nav > .nav-item > .nav-link {
+    color: var(--parchment) !important;
+}
+/* Sobre la foto el rojo no se ve: el activo usa el color del texto */
+body:has(.home-slider, .noticia-hero) #ftco-navbar:not(.scrolled) .nav-link.active::after {
+    background: currentColor;
+}
+@media (max-width: 991.98px) {
+    /* Menú abierto en la portada: fondo oscuro para que se lea */
+    body:has(.home-slider, .noticia-hero) #ftco-navbar:not(.scrolled) .navbar-collapse {
+        background: var(--midnight-roast);
+        margin-left: -12px;
+        margin-right: -12px;
+        padding: 0 12px;
+    }
+    body:has(.home-slider, .noticia-hero) #ftco-navbar:not(.scrolled) .navbar-nav > .nav-item {
+        border-top: var(--linea-oscura);
+    }
+}
+
+
+/* ---------------------------------------------------------------------
+   5. PIE DE PÁGINA (oscuro, mismo lenguaje)
+   --------------------------------------------------------------------- */
+.ftco-footer {
+    background: var(--midnight-roast) !important;
+    color: var(--linen);
+    font-size: 14px;
+    padding: var(--seccion) 0 40px;
+}
+.ftco-footer .overlay {
+    display: none;
+}
+.ftco-footer p,
+.ftco-footer li {
+    color: var(--linen);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Títulos de columna: serif fina con línea de 1px */
+.ftco-footer .ftco-heading-2,
+.ftco-footer .ftco-footer-widget h2 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: var(--parchment);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: var(--linea-oscura);
+}
+.ftco-footer .ftco-heading-2::after {
+    display: none;
+}
+
+/* Listas de enlaces: sin desplazamiento, subrayado al pasar el mouse */
+.ftco-footer a,
+.ftco-footer .pie-lista a,
+.ftco-footer .pie-contacto a {
+    color: var(--linen);
+    text-decoration: none;
+}
+.ftco-footer .pie-lista a:hover,
+.ftco-footer .pie-contacto a:hover {
+    color: var(--parchment);
+    padding-left: 0;
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+}
+.ftco-footer .pie-lista li {
+    margin-bottom: 0;
+}
+.ftco-footer .pie-lista a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-transform: uppercase;
+    font-size: 13px;
+}
+.ftco-footer .pie-contacto li {
+    color: var(--linen);
+    margin-bottom: 16px;
+    min-width: 0;
+}
+.ftco-footer .pie-contacto a,
+.ftco-footer .pie-contacto span {
+    min-width: 0;
+    /* El correo se parte en el <wbr> antes de la @ (ver footer); solo si un trozo
+       no cabe ni solo en su línea se corta la palabra */
+    overflow-wrap: break-word;
+}
+.ftco-footer .pie-contacto i {
+    color: var(--warm-stone);
+}
+
+/* Redes: cuadrados de 44px, radio 3px */
+.ftco-footer .pie-redes {
+    gap: 12px;
+}
+.ftco-footer .pie-redes a {
+    width: 44px;
+    height: 44px;
+    border: var(--linea-oscura);
+    border-radius: var(--radio-control);
+    color: var(--parchment);
+    transition: border-color var(--dur) var(--curva), opacity var(--dur) var(--curva);
+}
+.ftco-footer .pie-redes a:hover {
+    background: transparent;
+    border-color: var(--parchment);
+    color: var(--parchment);
+    text-decoration: none !important;
+}
+.ftco-footer .pie-redes i {
+    font-size: 18px !important;
+}
+
+/* Franja inferior: alineada a la izquierda */
+.ftco-footer .pie-inferior {
+    border-top: var(--linea-oscura);
+    color: var(--linen);
+}
+.ftco-footer .pie-inferior .text-center {
+    text-align: left !important;
+}
+.ftco-footer .pie-inferior small {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+}
+
+
+/* ---------------------------------------------------------------------
+   6. ENCABEZADOS DE SECCIÓN (.heading-section) Y RÓTULOS (.subheading)
+   Misma jerarquía en inicio, noticias y galería.
+   --------------------------------------------------------------------- */
+.heading-section h2 {
+    margin-bottom: 0 !important;
+    font-size: var(--titulo-grande);
+    line-height: .9;
+    letter-spacing: -0.04em;
+}
+/* Las tres estrellitas amarillas de la plantilla → una línea fina de 1px */
+.heading-section p.flip {
+    width: 64px;
+    height: 1px;
+    margin: 28px auto 0;
+    background: var(--warm-stone);
+}
+.heading-section p.flip::before,
+.heading-section p.flip::after,
+.heading-section p.flip span {
+    display: none !important;
+}
+/* Texto introductorio: tamaño de cuerpo, color secundario, ancho de lectura */
+.heading-section p.mt-5 {
+    max-width: 56ch;
+    margin: 28px auto 0 !important;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--espresso-texto);
+}
+
+/* Rótulo pequeño ("Bienvenido"): sans en mayúsculas, sin la letra manuscrita */
+.heading-section .subheading,
+.owl-carousel.home-slider .slider-item .slider-text .subheading {
+    display: block;
+    margin-bottom: 16px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: inherit;
+}
+.owl-carousel.home-slider .slider-item .slider-text .subheading {
+    color: var(--parchment);
+}
+
+
+/* ---------------------------------------------------------------------
+   7. PAGINACIÓN (listado de noticias). El resto de noticias está en noticias.css
+   --------------------------------------------------------------------- */
+.block-27 .pagination {
+    gap: 4px;
+}
+.block-27 ul li {
+    margin-bottom: 0;
+}
+.block-27 .page-item .page-link,
+.block-27 ul li a,
+.block-27 ul li span.page-link {
+    justify-content: center;
+    width: auto;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 10px;
+    line-height: 1;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+.block-27 .page-item.active .page-link {
+    background: transparent !important;
+    font-weight: 700;
+}
+.block-27 .page-item.disabled .page-link {
+    opacity: .45;
+}
+
+
+/* ---------------------------------------------------------------------
+   8. GALERÍA: lupa centrada al pasar el cursor
+   --------------------------------------------------------------------- */
+.gallery {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 0 !important;
+}
+/* Velo oscuro que aparece suave */
+.gallery::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: rgba(41, 38, 34, .35);
+    opacity: 0;
+    transition: opacity var(--dur) var(--curva);
+}
+.gallery .icon {
+    z-index: 1;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto !important;
+    background: rgba(41, 38, 34, .85);   /* fondo propio: contraste aunque la foto sea clara */
+    border: 1px solid var(--parchment);
+    border-radius: var(--radio-control);
+    color: var(--parchment);
+    font-size: 20px;
+    opacity: 0;
+    transform: scale(.85);
+    transition: opacity var(--dur) var(--curva), transform var(--dur) var(--curva);
+}
+.gallery .icon::after {
+    display: none;   /* el cuadro amarillo giratorio de la plantilla */
+}
+.gallery:hover::before,
+.gallery:focus-visible::before,
+.gallery:hover .icon,
+.gallery:focus-visible .icon {
+    opacity: 1;
+}
+.gallery:hover .icon,
+.gallery:focus-visible .icon {
+    transform: none;
+}
+/* Pie de foto */
+.gallery ~ p.small {
+    margin-top: 12px !important;
+    margin-bottom: 24px !important;   /* separa el pie de foto de la fila siguiente */
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: left !important;
+    color: var(--espresso-texto);
+}
+
+
+/* ---------------------------------------------------------------------
+   9. CONTACTO: rótulos y campos legibles sobre parchment
+   --------------------------------------------------------------------- */
+.contact-section .contact-info p span {
+    color: var(--onyx);
+    font-weight: 700;
+}
+.contact-section .form-control {
+    color: var(--onyx) !important;
+    font-size: 15px;
+    border: 0 !important;
+    border-bottom: var(--linea) !important;
+    border-radius: 0;
+}
+.contact-section .form-control::placeholder {
+    color: var(--espresso-texto);
+    opacity: 1;
+}
+.contact-section .form-control:focus {
+    border-bottom-color: var(--onyx) !important;
+}
+.contact-section .form-control.is-invalid {
+    border-bottom-color: var(--acento) !important;
+}
+.contact-section .invalid-feedback {
+    color: var(--acento);
+    font-size: 13px;
+}
+.contact-section .form-label {
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+
+/* ---------------------------------------------------------------------
+   MOVIMIENTO REDUCIDO: sin aparición, sin transiciones, sin marquee
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+    body {
+        opacity: 1 !important;
+    }
+}

@@ -83,7 +83,9 @@
                         @if ($institucion?->correo)
                             <li>
                                 <i class="bi bi-envelope-fill"></i>
-                                <a href="mailto:{{ $institucion->correo }}">{{ $institucion->correo }}</a>
+                                {{-- <wbr> antes de la @: si el correo no cabe, se parte ahí y no a mitad de palabra --}}
+                                @php [$correoUsuario, $correoDominio] = array_pad(explode('@', $institucion->correo, 2), 2, null); @endphp
+                                <a href="mailto:{{ $institucion->correo }}">{{ $correoUsuario }}@if ($correoDominio)<wbr>{{ '@' . $correoDominio }}@endif</a>
                             </li>
                         @endif
                         <li>

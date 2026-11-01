@@ -32,7 +32,6 @@ class Producto extends Model
         'precio'     => 'decimal:2',
         'costo'      => 'decimal:2',
         'stock'      => 'integer',
-    
     ];
 
     public function categoria()
@@ -40,6 +39,16 @@ class Producto extends Model
         return $this->belongsTo(Categoria::class, 'id_categoria', 'id_categoria');
     }
 
+    /** Tarifa de IVA del producto o, si no tiene, la del sistema */
+    public function tarifaIva(): float
+    {
+        return (float) ($this->impuesto ?? Factura::IVA_POR_DEFECTO);
+    }
+
+    /**
+     * Suma (o resta, con cantidad negativa) existencias, ajusta "disponible" y anota el movimiento.
+     * Si el producto no controla stock (stock NULL) no hace nada y devuelve false.
+     */
     public function moverStock(int $cantidad, string $tipo, ?string $referencia = null, ?string $nota = null): bool
     {
         if ($this->stock === null) {
@@ -67,5 +76,16 @@ class Producto extends Model
         MovimientoStock::registrar($this, $tipo, $cantidad, $referencia, $nota);
 
         return true;
+    }
+
+    /**
+     * moverStock sobre el producto con ese id, bloqueando su fila.
+     * Sirve para devolver stock de líneas viejas: si el producto ya se borró, no hace nada.
+     */
+    public static function moverStockDe(?int $idProducto, int $cantidad, string $tipo, ?string $referencia = null): void
+    {
+        if ($idProducto) {
+            static::lockForUpdate()->find($idProducto)?->moverStock($cantidad, $tipo, $referencia);
+        }
     }
 }

@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\DB;
 
 class CompraController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $data = Compra::with('proveedor')->orderByDesc('id_compra')->get();
@@ -30,9 +27,6 @@ class CompraController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $proveedores = Proveedor::orderBy('nombre')->get();
@@ -53,9 +47,6 @@ class CompraController extends Controller
         return view('admin.compras.create', compact('proveedores', 'productos'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request): RedirectResponse
     {
         $datos = $request->validate([
@@ -157,13 +148,9 @@ class CompraController extends Controller
                 $compra->load('detalles');
 
                 foreach ($compra->detalles as $d) {
-                    if (! $d->stock_sumado || ! $d->id_producto) {
-                        continue;
+                    if ($d->stock_sumado) {
+                        Producto::moverStockDe($d->id_producto, -$d->cantidad, 'anulacion', 'Anulación compra #' . $compra->codigo());
                     }
-
-                    $p = Producto::lockForUpdate()->find($d->id_producto);
-
-                    $p?->moverStock(-$d->cantidad, 'anulacion', 'Anulación compra #' . $compra->codigo());
                 }
 
                 $compra->update(['estado' => 'anulada']);

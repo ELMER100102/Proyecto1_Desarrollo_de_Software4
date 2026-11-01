@@ -2,32 +2,28 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-
+use App\Models\ConfigPedido;
 use App\Models\Contacto;
-use Illuminate\Support\Facades\View;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+
+        // Datos que usan todas las vistas del sitio (header, footer, contacto, menú...).
+        // once(): aunque el composer corre en cada vista web.*, se consulta una sola vez por petición.
         View::composer('web.*', function ($view) {
-        $view->with('institucion', Contacto::first());
-        //pedido
-        $view->with('pedidosConfig', \App\Models\ConfigPedido::first());
-    });
+            $view->with('institucion', Contacto::actual());
+            $view->with('pedidosConfig', once(fn () => ConfigPedido::first()));
+        });
     }
 }

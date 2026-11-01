@@ -1,0 +1,199 @@
+/* =====================================================================
+   noticias.css · Todo lo de noticias del sitio público:
+   - Inicio: las tres últimas noticias (tarjetas de la plantilla, armonizadas)
+   - Listado (/noticias)
+   - Detalle (/noticia/{id}): portada con la foto y el texto encima
+   Va después de tema-amrit.css y efectos.css. Usa sus variables
+   (--velo-noticia, --sombra-texto-foto, --crema, --cafe-profundo).
+   La paginación está en tema-amrit.css (comparte reglas con la navegación).
+   ===================================================================== */
+
+
+/* ---------------------------------------------------------------------
+   INICIO: últimas noticias (marcado original de la plantilla)
+   --------------------------------------------------------------------- */
+.blog-entry .block-20 {
+    border-radius: 0;
+}
+.blog-entry .text .heading {
+    margin: 20px 0 0;
+    font-size: var(--titulo-chico);
+    line-height: 1;
+}
+.blog-entry .text .heading a,
+.blog-entry .text .heading a:hover,
+.blog-entry .text .heading a:focus {
+    color: var(--onyx);
+}
+.blog-entry .text .heading a:hover,
+.blog-entry .text .heading a:focus-visible {
+    text-decoration: underline !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 4px;
+}
+
+
+/* ---------------------------------------------------------------------
+   LISTADO
+   --------------------------------------------------------------------- */
+.noticias-lista article.row {
+    --bs-gutter-x: 40px;
+    --bs-gutter-y: 20px;
+    padding-bottom: 40px !important;
+    margin-bottom: 40px !important;
+    border-bottom: var(--linea) !important;
+}
+.noticias-lista img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 0;
+}
+.noticias-lista__titulo {
+    margin: 0 0 16px;
+    font-size: clamp(24px, 2.4vw, 32px);
+    line-height: 1;
+}
+.noticias-lista__resumen {
+    max-width: 68ch;
+    margin: 0 0 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--espresso-texto);
+    /* Resumen de 3 líneas; el texto completo está en la noticia */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+
+/* ---------------------------------------------------------------------
+   DETALLE: portada con la foto y el texto encima
+   La barra de navegación flota transparente sobre ella (ver tema-amrit.css).
+   --------------------------------------------------------------------- */
+/* El artículo entero va sobre la foto: café profundo si no hay foto */
+.noticia {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;   /* la foto fija no se sale del artículo (clip, a diferencia de hidden, no rompe sticky) */
+    background: var(--cafe-profundo);
+    color: var(--crema);
+}
+/* Fondo fijo: ocupa la pantalla y se queda quieto mientras el texto sube por encima.
+   sticky + margen negativo (no background-attachment: fixed, que falla en iPhone). */
+.noticia__fondo {
+    position: sticky;
+    top: 0;
+    z-index: 0;
+    height: 100svh;
+    margin-bottom: -100svh;
+    overflow: hidden;                 /* el zoom inicial queda dentro */
+}
+.noticia__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: noticia-zoom 1.2s var(--ease) both;
+}
+@keyframes noticia-zoom {
+    from { transform: scale(1.05); }
+    to   { transform: none; }
+}
+.noticia__velo {
+    position: absolute;
+    inset: 0;
+    background: rgba(41, 38, 34, var(--velo-noticia));   /* plano, sin degradado */
+}
+.noticia-hero {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: min(100svh, 760px);   /* min-height: si el texto no cabe, crece en vez de cortarse */
+}
+.noticia-hero__contenido {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 40px;
+    /* arriba deja lugar a la barra de navegación, que flota encima */
+    padding-top: calc(88px + clamp(16px, 4vw, 56px));
+    padding-bottom: clamp(32px, 5vw, 64px);
+    text-shadow: var(--sombra-texto-foto);
+}
+.noticia-hero__titulo {
+    max-width: 1000px;
+    margin: 20px 0 0;
+    font-size: clamp(34px, 5vw, 64px);
+    line-height: .95;
+    letter-spacing: -0.03em;
+    color: var(--crema);
+}
+.noticia-hero__abajo {
+    max-width: 520px;
+}
+.noticia-hero__abajo p {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.55;
+    color: var(--crema);
+}
+
+/* Enlaces "← Noticias" y "Leer más ↓" sobre la foto: crema, con la misma raya */
+.enlace-nav.enlace-nav--claro {
+    color: var(--crema) !important;
+}
+
+/* Celular: con continuación debajo, el párrafo de la portada no pasa de 8 líneas */
+@media (max-width: 767.98px) {
+    .noticia-hero__abajo--sigue p {
+        display: -webkit-box;
+        -webkit-line-clamp: 8;
+        line-clamp: 8;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+/* Continuación del artículo: sube por encima de la foto fija.
+   Lleva una capa extra (--velo-lectura) porque el texto pasa sobre cualquier zona de
+   la foto, no solo la de la portada: así el contraste se mantiene en todo el recorrido. */
+html:has(.noticia-hero) {
+    scroll-behavior: smooth;   /* "Leer más ↓" baja suave */
+}
+.noticia-cuerpo {
+    --velo-lectura: .35;
+    position: relative;
+    z-index: 1;
+    padding: clamp(48px, 7vw, 96px) 0 var(--seccion);
+    background: rgba(41, 38, 34, var(--velo-lectura));
+    scroll-margin-top: 72px;   /* que no quede bajo la barra fija */
+}
+.noticia-cuerpo__texto {
+    max-width: 680px;
+    text-shadow: var(--sombra-texto-foto);
+}
+.noticia-cuerpo__texto p {
+    margin: 0 0 1.2em;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.6;
+    text-align: left;
+    color: var(--crema);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .noticia__img {
+        animation: none !important;
+    }
+    html:has(.noticia-hero) {
+        scroll-behavior: auto;
+    }
+}

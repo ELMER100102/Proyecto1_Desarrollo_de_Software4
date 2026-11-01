@@ -153,7 +153,7 @@ class PwaController extends Controller
 
     private function rutaLogo(): ?string
     {
-        $logo = Contacto::first()?->logo;
+        $logo = Contacto::actual()?->logo;
         $ruta = $logo ? public_path('storage/' . $logo) : null;
 
         return ($ruta && is_file($ruta)) ? $ruta : null;
@@ -169,7 +169,7 @@ class PwaController extends Controller
 
     private function nombreNegocio(): string
     {
-        return Contacto::first()?->nombre_empresa ?: config('negocio.nombre', config('app.name'));
+        return Contacto::actual()?->nombre_empresa ?: config('negocio.nombre', config('app.name'));
     }
 
     private function nombreCorto(): string

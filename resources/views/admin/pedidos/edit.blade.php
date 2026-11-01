@@ -60,6 +60,7 @@
 
                 <div class="mt-4 text-end">
                     <button type="submit" class="btn btn-dark">Guardar ajustes</button>
+                     <a href="{{ route('admin.pedidos.index') }}" class="btn btn-outline-secondary">Cancelar</a>
                 </div>
             </form>
         </div>

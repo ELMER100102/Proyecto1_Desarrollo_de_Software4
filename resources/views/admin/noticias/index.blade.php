@@ -34,7 +34,11 @@
                                     alt="{{ $item->titulo }}">
                             </td>
                             <td class="fw-semibold">{{ $item->titulo }}</td>
-                            <td>{{ $item->contenido }}</td>
+                            {{-- Resumen corto (las noticias pueden ser largas); data-search: el buscador
+                                 de la tabla sigue buscando en el texto completo --}}
+                            <td data-search="{{ $item->contenido }}" title="{{ \Illuminate\Support\Str::limit($item->contenido, 400) }}">
+                                {{ \Illuminate\Support\Str::limit($item->contenido, 150) }}
+                            </td>
                             <td class="text-center">
                                 <a href="{{ route('admin.noticias.edit', $item) }}" class="btn btn-sm btn-dark"
                                     title="Editar">

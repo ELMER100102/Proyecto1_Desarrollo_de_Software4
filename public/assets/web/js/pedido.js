@@ -11,12 +11,16 @@
   'use strict';
 
   var CLAVE = 'carrito_pedido';
+  var CLAVE_NOTAS = 'carrito_notas';   // { id: "nota" } aparte: el carrito conserva su forma { id: cantidad }
   var MAX_POR_PRODUCTO = 99;
+  var MAX_NOTA = 200;
   var memoria = {};   // respaldo si el navegador no deja usar localStorage
+  var memoriaNotas = {};
 
-  var moneda = new Intl.NumberFormat('es-CR', {
-    style: 'currency', currency: 'CRC', maximumFractionDigits: 0
-  });
+  // Precios como en el resto del sitio (Blade: number_format($n, 0, ',', '.')): ₡1.200
+  var moneda = {
+    format: function (n) { return '₡' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+  };
 
   /* ---------------- Carrito (guardado en el navegador) ---------------- */
 
@@ -41,13 +45,59 @@
     guardar: function (carrito) {
       memoria = carrito;
       try { localStorage.setItem(CLAVE, JSON.stringify(carrito)); } catch (e) { /* queda en memoria */ }
+
+      // Las notas de productos que salieron del carrito se borran
+      var notas = Carrito.notas();
+      var cambio = false;
+      Object.keys(notas).forEach(function (id) {
+        if (!carrito[id]) { delete notas[id]; cambio = true; }
+      });
+      if (cambio) { Carrito.guardarNotas(notas); }
+
       Carrito.actualizarContador();
     },
 
-    agregar: function (id, cantidad) {
+    // nota (opcional): si trae texto, reemplaza la nota del producto; si no, se conserva la que había
+    agregar: function (id, cantidad, nota) {
       var c = Carrito.leer();
       c[id] = Math.min(MAX_POR_PRODUCTO, (c[id] || 0) + (cantidad || 1));
       Carrito.guardar(c);
+      if (typeof nota === 'string' && nota.trim() !== '') { Carrito.fijarNota(id, nota); }
+    },
+
+    /* ---- Notas por producto ("Instrucciones especiales") ---- */
+
+    notas: function () {
+      var crudo = null;
+      try { crudo = localStorage.getItem(CLAVE_NOTAS); } catch (e) { return memoriaNotas; }
+
+      var datos = {};
+      try { datos = JSON.parse(crudo || '{}'); } catch (e) { datos = {}; }
+      if (!datos || typeof datos !== 'object' || Array.isArray(datos)) { datos = {}; }
+
+      var limpio = {};
+      Object.keys(datos).forEach(function (id) {
+        var t = typeof datos[id] === 'string' ? datos[id].trim().slice(0, MAX_NOTA) : '';
+        if (/^\d+$/.test(id) && t !== '') { limpio[id] = t; }
+      });
+      return limpio;
+    },
+
+    guardarNotas: function (notas) {
+      memoriaNotas = notas;
+      try { localStorage.setItem(CLAVE_NOTAS, JSON.stringify(notas)); } catch (e) { /* queda en memoria */ }
+    },
+
+    nota: function (id) {
+      return Carrito.notas()[id] || '';
+    },
+
+    // Texto vacío = borrar la nota
+    fijarNota: function (id, texto) {
+      var notas = Carrito.notas();
+      var t = String(texto || '').trim().slice(0, MAX_NOTA);
+      if (t === '') { delete notas[id]; } else { notas[id] = t; }
+      Carrito.guardarNotas(notas);
     },
 
     fijar: function (id, cantidad) {
@@ -155,6 +205,8 @@
         var tdNombre = crear('td', 'align-middle');
         tdNombre.appendChild(crear('strong', '', p.nombre));
         tdNombre.appendChild(crear('div', 'small text-muted', moneda.format(p.precio) + ' c/u'));
+        var nota = Carrito.nota(id);
+        if (nota) { tdNombre.appendChild(crear('div', 'small pedido-nota', 'Nota: ' + nota)); }
 
         var tdCant = crear('td', 'align-middle text-nowrap');
         var menos = crear('button', 'btn btn-sm btn-outline-secondary', '−');
@@ -217,13 +269,22 @@
 
         // Un campo oculto no debe bloquear el envío
         var campo = grupo.querySelector('input, textarea');
-        if (campo) { campo.disabled = !visible; }
+        if (campo) {
+          campo.disabled = !visible;
+          if (!visible && window.Validar) { window.Validar.validarCampo(campo); }   // deshabilitado: se quita su aviso
+        }
       });
 
       var telefono = document.getElementById('campoTelefono');
       var obligatorio = ['llevar', 'domicilio'].indexOf(tipo) !== -1;
       telefono.required = obligatorio;
       document.getElementById('etiquetaTelefono').textContent = obligatorio ? 'Teléfono' : 'Teléfono (opcional)';
+
+      // Las mismas reglas que el servidor: obligatorio solo en llevar y domicilio
+      telefono.setAttribute('data-validar', obligatorio ? 'requerido|telefono' : 'telefono');
+      if (window.Validar && telefono.hasAttribute('data-validar-tocado')) { window.Validar.validarCampo(telefono); }
+      var resumen = form.querySelector('[data-validar-resumen]');
+      if (resumen) { resumen.textContent = ''; }
 
       var mesa = document.getElementById('campoMesa');
       if (mesa) { mesa.required = !mesa.disabled; }
@@ -242,12 +303,21 @@
       if (ids.length === 0) { e.preventDefault(); dibujar(); return; }
 
       itemsOcultos.replaceChildren();
+      var notas = Carrito.notas();
       ids.forEach(function (id) {
         var input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'items[' + id + ']';
         input.value = c[id];
         itemsOcultos.appendChild(input);
+
+        if (notas[id]) {
+          var nota = document.createElement('input');
+          nota.type = 'hidden';
+          nota.name = 'notas[' + id + ']';
+          nota.value = notas[id];
+          itemsOcultos.appendChild(nota);
+        }
       });
 
       btnEnviar.disabled = true;               // evita enviarlo dos veces

@@ -3,129 +3,91 @@
 @section('titulo', 'Menú')
 
 @section('contenido')
-    <section class="ftco-section">
+    {{-- ENCABEZADO DE LA CARTA --}}
+    <header class="carta-encabezado">
         <div class="container">
+            <div class="carta-encabezado__fila">
+                {{-- EDITAR: etiqueta izquierda (texto provisional) --}}
+                <span class="carta-etiqueta">La carta</span>
 
-            <div class="row justify-content-center mb-5 pb-3">
-                <div class="col-md-7 heading-section text-center">
-                    <h2 class="mb-4">Nuestro Menú Artesanal</h2>
-                    <p class="flip"><span class="deg1"></span><span class="deg2"></span><span class="deg3"></span></p>
-                    <p class="mt-5">
-                        Explora nuestra selección diaria de panes recién horneados, repostería dulce y salada,
-                        y deliciosas bebidas preparadas al momento. Todo elaborado con ingredientes de la más alta
-                        calidad para endulzar y acompañar cada uno de tus momentos.
-                    </p>
-                </div>
+                <h1 class="carta-encabezado__titulo" data-reveal="lineas">Menú</h1>
+
+                {{-- EDITAR: etiqueta derecha (texto provisional) --}}
+                <span class="carta-etiqueta">Pan · Repostería · Bebidas</span>
             </div>
 
-            @if ($categorias->isEmpty())
-                <p class="text-center">Pronto tendremos productos disponibles.</p>
-            @else
-                <section class="ftco-menu">
-                    <div class="container-fluid">
-                        <div class="row d-md-flex">
+            {{-- EDITAR: frase bajo el título (texto provisional) --}}
+            <p class="carta-encabezado__frase" data-reveal="blur-in">Recién horneado, cada día.</p>
+        </div>
+    </header>
 
-                            <div class="col-12 p-md-5">
-                                <div class="row">
+    @if ($categorias->isEmpty())
+        <div class="container">
+            <p class="carta-vacia">Pronto tendremos productos disponibles.</p>
+        </div>
+    @else
+        {{-- CATEGORÍAS: todas en un solo recorrido. La carta es informativa:
+             para pedir se usa la página "Mi pedido". --}}
+        <div class="carta" id="carta">
+            @foreach ($categorias as $categoria)
+                <section class="carta-cat" id="{{ $categoria->ancla() }}"
+                    aria-labelledby="{{ $categoria->ancla() }}-titulo">
+                    <div class="container">
+                        <div class="carta-cat__linea" data-reveal="linea"></div>
 
-                                    {{-- PESTAÑAS --}}
-                                    @php
-                                        $limite = 5; // cuántas pestañas se ven directamente
-                                        $visibles = $categorias->take($limite);
-                                        $ocultas = $categorias->slice($limite);
-                                    @endphp
+                        <div class="carta-cat__rejilla">
+                            <div class="carta-cat__cabeza">
+                                <h2 class="carta-cat__titulo" id="{{ $categoria->ancla() }}-titulo"
+                                    tabindex="-1" data-reveal="blur-in">{{ $categoria->nombre }}</h2>
 
-                                    <div class="col-md-12 nav-link-wrap mb-5">
-                                        <div class="nav nav-pills" id="v-pills-tab" role="tablist">
-
-                                            <a class="nav-link active" id="v-pills-0-tab" data-toggle="pill"
-                                                data-bs-toggle="pill" href="#v-pills-0" role="tab"
-                                                aria-controls="v-pills-0" aria-selected="true">Todos</a>
-
-                                            @foreach ($visibles as $categoria)
-                                                <a class="nav-link" id="v-pills-{{ $categoria->id_categoria }}-tab"
-                                                    data-toggle="pill" data-bs-toggle="pill"
-                                                    href="#v-pills-{{ $categoria->id_categoria }}" role="tab"
-                                                    aria-controls="v-pills-{{ $categoria->id_categoria }}"
-                                                    aria-selected="false">{{ $categoria->nombre }}</a>
-                                            @endforeach
-
-                                            {{-- Las demás categorías van dentro de "Más" --}}
-                                            @if ($ocultas->isNotEmpty())
-                                                <div class="dropdown">
-                                                    <a class="nav-link dropdown-toggle" id="tab-mas" href="#"
-                                                        role="button" data-toggle="dropdown" data-bs-toggle="dropdown"
-                                                        aria-expanded="false">Más</a>
-
-                                                    <div class="dropdown-menu" aria-labelledby="tab-mas">
-                                                        @foreach ($ocultas as $categoria)
-                                                            <a class="dropdown-item"
-                                                                id="v-pills-{{ $categoria->id_categoria }}-tab"
-                                                                data-toggle="pill" data-bs-toggle="pill"
-                                                                href="#v-pills-{{ $categoria->id_categoria }}"
-                                                                role="tab"
-                                                                aria-controls="v-pills-{{ $categoria->id_categoria }}"
-                                                                aria-selected="false">{{ $categoria->nombre }}</a>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            @endif
-
-                                        </div>
-                                    </div>
-
-                                    {{-- PANELES --}}
-                                    <div class="col-md-12 d-flex align-items-center">
-                                        <div class="tab-content w-100" id="v-pills-tabContent">
-
-                                            {{-- Todos: recorre $todos (antes usaba $categoria, que aquí no existe) --}}
-                                            <div class="tab-pane fade show active" id="v-pills-0" role="tabpanel"
-                                                aria-labelledby="v-pills-0-tab">
-                                                <div class="row">
-                                                    @foreach ($todos as $producto)
-                                                        @include('web.parts.producto-card', [
-                                                            'producto' => $producto,
-                                                        ])
-                                                    @endforeach
-                                                </div>
-                                            </div>
-
-                                            @foreach ($categorias as $categoria)
-                                                <div class="tab-pane fade" id="v-pills-{{ $categoria->id_categoria }}"
-                                                    role="tabpanel"
-                                                    aria-labelledby="v-pills-{{ $categoria->id_categoria }}-tab">
-                                                    <div class="row">
-                                                        @foreach ($categoria->productos as $producto)
-                                                            @include('web.parts.producto-card', [
-                                                                'producto' => $producto,
-                                                            ])
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            @endforeach
-
-                                        </div>
-                                    </div>
-
-                                </div>
+                                {{-- Frase corta solo si la categoría tiene descripción --}}
+                                @if (!empty($categoria->descripcion))
+                                    <p class="carta-cat__frase" data-reveal="blur-in">{{ $categoria->descripcion }}</p>
+                                @endif
                             </div>
 
+                            <ul class="carta-platos" data-reveal="stagger">
+                                @foreach ($categoria->productos as $producto)
+                                    <li class="carta-plato {{ $producto->disponible ? '' : 'carta-plato--agotado' }}">
+                                        <div class="carta-plato__linea1">
+                                            <h3 class="carta-plato__nombre">{{ $producto->nombre }}</h3>
+
+                                            <span class="carta-plato__precio">
+                                                @if (!$producto->disponible)
+                                                    <span class="carta-plato__estado">Agotado</span>
+                                                @elseif (!is_null($producto->stock) && $producto->stock <= 5)
+                                                    <span class="carta-plato__estado carta-plato__estado--ultimas">Últimas unidades</span>
+                                                @endif
+                                                <span>₡{{ number_format($producto->precio, 0, ',', '.') }}</span>
+                                            </span>
+                                        </div>
+
+                                        @if ($producto->descripcion)
+                                            <p class="carta-plato__desc">{{ $producto->descripcion }}</p>
+                                        @endif
+                                    </li>
+                                @endforeach
+
+                                {{-- Con cantidad impar, una celda vacía mantiene las líneas de la cuadrícula --}}
+                                @if ($categoria->productos->count() % 2 === 1)
+                                    <li class="carta-plato carta-plato--vacio" aria-hidden="true"></li>
+                                @endif
+                            </ul>
                         </div>
                     </div>
                 </section>
-            @endif
-
+            @endforeach
         </div>
-    </section>
-@endsection
 
-<section>
-    <script>
-        $(document).on('click', '.dropdown-menu .dropdown-item', function() {
-            $('#tab-mas').addClass('active');
-        });
-        $(document).on('click', '.nav-pills > .nav-link', function() {
-            $('#tab-mas').removeClass('active');
-        });
-    </script>
-</section>
+        {{-- BARRA DE CATEGORÍAS FIJA (abajo) + píldora del pedido --}}
+        <div class="carta-dock" id="cartaDock">
+            @include('web.parts.carta-barra', ['etiqueta' => 'Categorías del menú'])
+
+            @if ($pedidosConfig?->disponible())
+                <a class="carta-pildora" id="cartaPildora" href="{{ route('pedido.create') }}#tuPedido" hidden>
+                    Ver pedido · <span class="contador-carrito">0</span>
+                </a>
+            @endif
+        </div>
+    @endif
+@endsection

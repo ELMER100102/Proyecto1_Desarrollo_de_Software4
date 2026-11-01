@@ -12,7 +12,7 @@ class PedidoDetalle extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_pedido', 'id_producto', 'descripcion', 'cantidad', 'precio', 'subtotal',
+        'id_pedido', 'id_producto', 'descripcion', 'nota', 'cantidad', 'precio', 'subtotal',
         'stock_descontado',
     ];
 

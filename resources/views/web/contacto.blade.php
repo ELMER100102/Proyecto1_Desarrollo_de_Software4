@@ -5,6 +5,11 @@
 @section('contenido')
     <section class="ftco-section contact-section">
         <div class="container mt-5">
+
+            @if (session('success'))
+                <div class="alert alert-success ftco-animate">{{ session('success') }}</div>
+            @endif
+            
             <div class="row block-9">
                 <div class="col-md-4 contact-info ftco-animate">
                     <div class="row">

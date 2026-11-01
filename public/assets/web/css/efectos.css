@@ -1,0 +1,197 @@
+/* =====================================================================
+   efectos.css · Base de movimiento del sitio público.
+   Va después de tema-amrit.css. Se apoya en efectos.js.
+
+   Mejora progresiva: los estados ocultos solo existen bajo html.js
+   (clase que pone un script en el <head>). Sin JavaScript todo se ve.
+
+   Uso en las vistas:
+     data-reveal="fade-up"   opacidad + sube 18px
+     data-reveal="blur-in"   igual + desenfoque 8px → 0 (solo títulos y textos cortos)
+     data-reveal="stagger"   en un contenedor: sus hijos entran en cascada
+     data-reveal="lineas"    título grande: cada línea sube detrás de una máscara
+     data-reveal="linea"     línea divisoria que se dibuja de izquierda a derecha
+   ===================================================================== */
+
+:root {
+    --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --t-hover: .4s;
+    --t-reveal: .8s;
+    --telon: #d8cbb8;   /* parchment */
+}
+
+
+/* ---------------------------------------------------------------------
+   TRANSICIÓN ENTRE PÁGINAS: telón del color del fondo
+   Al cargar se abre solo con CSS (no depende de que cargue el JS).
+   Al salir, efectos.js pone html.saliendo y el telón se cierra.
+   --------------------------------------------------------------------- */
+html.js body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    background: var(--telon);
+    pointer-events: none;
+    opacity: 1;
+    animation: telon-abrir .45s var(--ease) .05s forwards;
+}
+html.js.saliendo body::after {
+    animation: telon-cerrar .25s var(--ease) forwards;
+}
+
+@keyframes telon-abrir {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+@keyframes telon-cerrar {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+
+/* ---------------------------------------------------------------------
+   REVELADOS AL ENTRAR EN PANTALLA (una sola vez)
+   --------------------------------------------------------------------- */
+
+/* fade-up y blur-in */
+html.js [data-reveal="fade-up"],
+html.js [data-reveal="blur-in"] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity var(--t-reveal) var(--ease),
+                transform var(--t-reveal) var(--ease);
+}
+html.js [data-reveal="blur-in"] {
+    filter: blur(8px);
+    transition: opacity var(--t-reveal) var(--ease),
+                transform var(--t-reveal) var(--ease),
+                filter var(--t-reveal) var(--ease);
+}
+html.js [data-reveal="fade-up"].es-visible,
+html.js [data-reveal="blur-in"].es-visible {
+    opacity: 1;
+    transform: none;
+    filter: none;
+}
+
+/* stagger: cada hijo con 50ms de retraso, tope 400ms (--i lo pone efectos.js) */
+html.js [data-reveal="stagger"] > * {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity var(--t-reveal) var(--ease),
+                transform var(--t-reveal) var(--ease);
+    transition-delay: min(calc(var(--i, 0) * 50ms), 400ms);
+}
+html.js [data-reveal="stagger"].es-visible > * {
+    opacity: 1;
+    transform: none;
+}
+
+/* lineas: oculto hasta que efectos.js parte el texto en líneas */
+html.js [data-reveal="lineas"]:not(.lineas-listas) {
+    opacity: 0;
+}
+.rl-linea {
+    display: block;
+    overflow: hidden;
+    /* espacio extra para que la máscara no corte tildes ni descendentes */
+    padding: .14em 0 .06em;
+    margin: -.14em 0 -.06em;
+}
+.rl-texto {
+    display: block;
+    transform: translateY(110%);
+    transition: transform var(--t-reveal) var(--ease);
+    transition-delay: calc(var(--l, 0) * 90ms);
+}
+.es-visible .rl-texto {
+    transform: none;
+}
+
+/* linea: divisoria que se dibuja */
+html.js [data-reveal="linea"] {
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 1s var(--ease);
+}
+html.js [data-reveal="linea"].es-visible {
+    transform: none;
+}
+
+/* Si efectos.js no llegó a cargar (ver script del <head>): todo visible */
+html.sin-efectos [data-reveal],
+html.sin-efectos [data-reveal="stagger"] > * {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+}
+
+
+/* ---------------------------------------------------------------------
+   HOVER Y FOCO
+   --------------------------------------------------------------------- */
+
+/* Enlaces de lista (pie) y utilidad .enlace-linea: subrayado que crece desde la izquierda */
+.ftco-footer .pie-lista a,
+.enlace-linea {
+    position: relative;
+}
+.ftco-footer .pie-lista a:hover,
+.ftco-footer .pie-lista a:focus-visible {
+    text-decoration: none !important;
+}
+.ftco-footer .pie-lista a::after,
+.enlace-linea::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 12px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--t-hover) var(--ease);
+}
+.enlace-linea::after {
+    bottom: -2px;
+}
+.ftco-footer .pie-lista a:hover::after,
+.ftco-footer .pie-lista a:focus-visible::after,
+.enlace-linea:hover::after,
+.enlace-linea:focus-visible::after {
+    transform: scaleX(1);
+}
+
+/* Enlaces dentro de texto: subrayado tenue que se oscurece (debe verse siempre) */
+main p a:not(.btn),
+main li a:not(.btn) {
+    text-decoration-color: rgba(44, 44, 44, .35) !important;
+    transition: text-decoration-color var(--t-hover) var(--ease),
+                color var(--t-hover) var(--ease);
+}
+main p a:not(.btn):hover,
+main li a:not(.btn):hover,
+main p a:not(.btn):focus-visible,
+main li a:not(.btn):focus-visible {
+    text-decoration-color: currentColor !important;
+}
+
+
+/* ---------------------------------------------------------------------
+   MOVIMIENTO REDUCIDO: contenido directo, sin telón ni desenfoques
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    html.js body::after {
+        display: none;
+    }
+    html.js [data-reveal],
+    html.js [data-reveal="stagger"] > *,
+    .rl-texto {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+        transition: none !important;
+    }
+}

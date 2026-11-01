@@ -5,12 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ConfigPedido;
 use App\Models\Pedido;
-use App\Models\Producto;
-use App\Services\FacturaService;
+use App\Services\PedidoService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
@@ -22,7 +20,7 @@ class PedidoAdminController extends Controller
     /** Pantalla principal. ?ver=abiertos (por defecto) | hoy */
     public function index(Request $request)
     {
-        $ver = $request->query('ver') === 'hoy' ? 'hoy' : 'abiertos';
+        $ver = $this->vista($request);
 
         return view('admin.pedidos.index', [
             'ver'           => $ver,
@@ -36,7 +34,7 @@ class PedidoAdminController extends Controller
     /** Solo las tarjetas (HTML): la pantalla las vuelve a pedir cuando hay cambios */
     public function lista(Request $request)
     {
-        $ver = $request->query('ver') === 'hoy' ? 'hoy' : 'abiertos';
+        $ver = $this->vista($request);
 
         return view('admin.pedidos._lista', [
             'ver'     => $ver,
@@ -52,15 +50,11 @@ class PedidoAdminController extends Controller
     {
         $desde = max(0, (int) $request->query('desde', 0));
 
-        $ultimo = (int) Pedido::max('id_pedido');
+        $p = Pedido::latest('id_pedido')->first();
+        $ultimo = (int) $p?->id_pedido;
         $abiertos = Pedido::whereIn('estado', Pedido::ABIERTOS)->count();
         $nuevos = $desde > 0 ? Pedido::where('id_pedido', '>', $desde)->count() : 0;
-
-        $texto = null;
-        if ($ultimo > 0) {
-            $p = Pedido::find($ultimo);
-            $texto = $p ? $p->turnoVisible() . ' · ' . $p->cliente . ' · ' . $p->etiquetaTipo() : null;
-        }
+        $texto = $p ? $p->turnoVisible() . ' · ' . $p->cliente . ' · ' . $p->etiquetaTipo() : null;
 
         return response()->json([
             'pendientes' => Pedido::where('estado', 'pendiente')->count(),
@@ -73,42 +67,15 @@ class PedidoAdminController extends Controller
         ])->header('Cache-Control', 'no-store');
     }
 
-    /** Avanza un pedido al siguiente estado o lo cancela. Solo se permiten los pasos válidos. */
-    public function cambiarEstado(Request $request, int $id, FacturaService $facturas)
+    /** Avanza un pedido al siguiente estado o lo cancela (botones de cada tarjeta) */
+    public function cambiarEstado(Request $request, int $id, PedidoService $pedidos)
     {
         $nuevo = $request->validate([
             'estado' => ['required', Rule::in(['preparando', 'listo', 'entregado', 'cancelado'])],
         ])['estado'];
 
         try {
-            $pedido = DB::transaction(function () use ($id, $nuevo, $facturas) {
-                // Se bloquea la fila para que dos personas no cambien el mismo pedido a la vez
-                $pedido = Pedido::lockForUpdate()->findOrFail($id);
-
-                $permitido = $nuevo === 'cancelado'
-                    ? $pedido->estaAbierto()
-                    : $pedido->siguienteEstado() === $nuevo;
-
-                if (! $permitido) {
-                    throw new DomainException(
-                        "El {$pedido->turnoVisible()} ya está «{$pedido->etiquetaEstado()}»: la pantalla estaba desactualizada."
-                    );
-                }
-
-                // Un pedido cancelado devuelve a la vitrina lo que había descontado
-                if ($nuevo === 'cancelado') {
-                    $this->devolverStock($pedido);
-                }
-
-                $pedido->update(['estado' => $nuevo, 'fecha_estado' => now()]);
-
-                // Al entregar se emite el comprobante (sin tocar stock: el pedido ya lo descontó)
-                if ($nuevo === 'entregado') {
-                    $facturas->emitirDesdePedido($pedido);
-                }
-
-                return $pedido;
-            });
+            $pedido = $pedidos->cambiarEstado($id, $nuevo);
         } catch (DomainException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -118,21 +85,10 @@ class PedidoAdminController extends Controller
 
     // ------------------------------------------------------------------
 
-    /** Devuelve el stock de las líneas que lo descontaron y las marca para no devolverlo dos veces */
-    private function devolverStock(Pedido $pedido): void
+    /** Pedidos de la pantalla: ?ver=abiertos (por defecto) | hoy */
+    private function vista(Request $request): string
     {
-        $referencia = 'Cancelación pedido #' . str_pad($pedido->id_pedido, 6, '0', STR_PAD_LEFT);
-
-        foreach ($pedido->detalles()->where('stock_descontado', true)->get() as $detalle) {
-            // El producto pudo borrarse después de pedirse (id_producto queda en NULL)
-            $producto = $detalle->id_producto
-                ? Producto::lockForUpdate()->find($detalle->id_producto)
-                : null;
-
-            $producto?->moverStock($detalle->cantidad, 'anulacion', $referencia);
-
-            $detalle->update(['stock_descontado' => false]);
-        }
+        return $request->query('ver') === 'hoy' ? 'hoy' : 'abiertos';
     }
 
     private function consulta(string $ver)

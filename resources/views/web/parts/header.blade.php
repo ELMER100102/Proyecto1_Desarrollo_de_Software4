@@ -33,7 +33,8 @@
                         href="{{ route('menu') }}">Menú</a>
                 </li>
 
-                @if ($pedidosConfig?->disponible())
+                {{-- En "Mi pedido" este enlace lo reemplaza el botón del carrito (abajo) --}}
+                @if ($pedidosConfig?->disponible() && !request()->routeIs('pedido.create'))
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('pedido.*') ? 'active' : '' }}"
                             href="{{ route('pedido.create') }}">
@@ -48,5 +49,18 @@
                 </li>
             </ul>
         </div>
+
+        {{-- Botón del carrito: solo en "Mi pedido". Abre el panel lateral (panel-pedido.js).
+             La cantidad la actualiza pedido.js en .contador-carrito. --}}
+        @if ($pedidosConfig?->disponible() && request()->routeIs('pedido.create'))
+            <button type="button" class="carrito-boton" id="btnCarrito" aria-label="Ver mi pedido"
+                aria-haspopup="dialog" aria-controls="panelPedido">
+                <svg class="carrito-boton__bolsa" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                    <path d="M5 8h14l-1 12H6L5 8z" />
+                    <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+                </svg>
+                <span class="contador-carrito" style="display:none" aria-live="polite">0</span>
+            </button>
+        @endif
     </div>
 </nav>

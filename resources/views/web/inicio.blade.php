@@ -5,7 +5,7 @@
 @section('contenido')
 
     {{-- CARROUSEL 2 --}}
-    <section class="home-slider owl-carousel img" style="background-image: url(images/bg_1.jpg);">
+    <section class="home-slider owl-carousel img" style="background-image: url('{{ asset('assets/web/images/bg_1.jpg') }}');">
 
         @forelse ($slides as $item)
             <div class="slider-item" style="background-image: url('{{ asset('storage/' . $item->imagen) }}');">
@@ -27,7 +27,8 @@
                 </div>
             </div>
         @empty
-            <div class="slider-item" style="background-image: url('{{ asset('storage/' . $item->imagen) }}');">
+            {{-- Sin slides: imagen de la plantilla ($item no existe en este bloque) --}}
+            <div class="slider-item" style="background-image: url('{{ asset('assets/web/images/bg_1.jpg') }}');">
                 <div class="overlay"></div>
                 <div class="container">
                     <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">

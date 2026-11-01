@@ -1,0 +1,14 @@
+/* Estilo de los mensajes de validaciones.js (sitio y admin).
+   Ajusta --validar-color si cambias el acento de la marca. */
+:root { --validar-color: #8b2a22; }
+[data-bs-theme="dark"] { --validar-color: #f1a39c; }   /* legible sobre fondo oscuro del admin */
+
+.validar-error {
+  color: var(--validar-color);
+  font-size: .8125rem;
+  line-height: 1.35;
+  margin-top: .25rem;
+}
+.validar-invalido {
+  border-color: var(--validar-color) !important;
+}

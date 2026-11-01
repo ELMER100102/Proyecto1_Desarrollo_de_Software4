@@ -23,10 +23,12 @@
                             <!-- Imagen con el efecto de Fancybox y la plantilla de fondo -->
                             <a href="{{ asset('storage/' . $item->imagen) }}" data-fancybox="galeria"
                                 data-caption="{{ $item->descripcion }}"
-                                class="gallery img d-flex align-items-center rounded"
+                                class="gallery img d-flex align-items-center"
+                                aria-label="Ampliar imagen: {{ $item->descripcion }}"
                                 style="background-image: url('{{ asset('storage/' . $item->imagen) }}'); height: 220px; background-size: cover; background-position: center;">
-                                <div class="icon mb-4 d-flex align-items-center justify-content-center">
-                                    <span class="icon-search"></span>
+                                {{-- Lupa centrada que aparece al pasar el cursor (Bootstrap Icons) --}}
+                                <div class="icon d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-search" aria-hidden="true"></i>
                                 </div>
                             </a>
 

@@ -60,7 +60,13 @@
                 <ul class="list-unstyled my-3">
                     @foreach ($pedido->detalles as $d)
                         <li class="d-flex justify-content-between">
-                            <span><strong>{{ $d->cantidad }}</strong> × {{ $d->descripcion }}</span>
+                            <span>
+                                <strong>{{ $d->cantidad }}</strong> × {{ $d->descripcion }}
+                                {{-- Nota por producto ("Instrucciones especiales" del cliente) --}}
+                                @if ($d->nota)
+                                    <span class="d-block small fst-italic text-body-secondary">Nota: {{ $d->nota }}</span>
+                                @endif
+                            </span>
                             <span class="text-body-secondary">₡{{ number_format($d->subtotal, 0, ',', '.') }}</span>
                         </li>
                     @endforeach

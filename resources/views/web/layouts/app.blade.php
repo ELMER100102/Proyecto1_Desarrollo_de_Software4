@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{-- interactive-widget: con el teclado abierto en Android, el alto (dvh) se ajusta y el pie del panel queda visible --}}
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
     <title> @yield('titulo')</title>
 
     <link rel="manifest" href="{{ route('pwa.manifest') }}">

@@ -2,29 +2,27 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ManejaImagenes;
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
-use App\Models\Producto;
 use App\Models\MovimientoStock;
+use App\Models\Producto;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class ProductoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    use ManejaImagenes;
+
+    private const CARPETA = 'uploads/productos';
+
+    public function index()
     {
         $data = Producto::with('categoria')->orderBy('nombre')->get();
         return view('admin.productos.index', compact('data'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Request $request)
     {
         $data = new Producto([
@@ -37,16 +35,12 @@ class ProductoController extends Controller
         return view('admin.productos.create', compact('data', 'categorias'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $datos = $request->validate($this->reglas(), $this->mensajes());
+        $datos['imagen'] = $this->reemplazarImagen($request, self::CARPETA);
 
-        if ($request->hasFile('imagen')) {
-            $datos['imagen'] = $request->file('imagen')->store('uploads/productos', 'public');
-        }
+        // Con stock 0 nace agotado
         if (isset($datos['stock']) && (int) $datos['stock'] === 0) {
             $datos['disponible'] = false;
         }
@@ -61,17 +55,6 @@ class ProductoController extends Controller
             ->with('success', 'Producto creado correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Producto $producto)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Producto $producto)
     {
         $categorias = Categoria::orderBy('nombre')->get();
@@ -79,25 +62,16 @@ class ProductoController extends Controller
         return view('admin.productos.edit', ['data' => $producto, 'categorias' => $categorias]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Producto $producto)
     {
         $datos = $request->validate($this->reglas(), $this->mensajes());
+        $datos['imagen'] = $this->reemplazarImagen($request, self::CARPETA, $producto->imagen);
 
         $stockAnterior = $producto->stock;          // lo que hay guardado
 
-        if ($request->hasFile('imagen')) {
-            if ($producto->imagen) {
-
-                Storage::disk('public')->delete($producto->imagen);
-            }
-            $datos['imagen'] = $request->file('imagen')->store('uploads/productos', 'public');
-        }
-        
         $producto->update($datos);
 
+        // Si el stock cambió a mano, queda anotado en el kardex
         $stockNuevo = $producto->stock;
 
         if ($stockNuevo !== null && $stockNuevo !== $stockAnterior) {
@@ -114,21 +88,16 @@ class ProductoController extends Controller
             ->with('success', 'Producto actualizado correctamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Producto $producto)
     {
-        if ($producto->imagen) {
-            Storage::disk('public')->delete($producto->imagen);
-        }
-
+        $this->borrarImagen($producto->imagen);
         $producto->delete();
 
         return redirect()->route('admin.productos.index')
             ->with('success', 'Producto eliminado correctamente.');
     }
 
+    /** Interruptores "Disponible" / "Visible" del listado (AJAX) */
     public function alternar(Request $request, Producto $producto)
     {
         $datos = $request->validate([
@@ -144,6 +113,7 @@ class ProductoController extends Controller
         ]);
     }
 
+    /** Buscador del catálogo CABYS de Hacienda (AJAX). Se guarda en caché un día. */
     public function buscarCabys(Request $request)
     {
         $texto = trim((string) $request->query('q', ''));
@@ -183,10 +153,10 @@ class ProductoController extends Controller
             'nombre'            => 'required|string|max:150',
             'descripcion'       => 'nullable|string|max:255',
             'precio'            => 'required|numeric|min:0|max:99999999.99',
-            'imagen'            => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'imagen'            => $this->reglaImagen(),
             'disponible'        => 'required|boolean',
             'visible'           => 'required|boolean',
-            'stock' => 'nullable|integer|min:0|max:100000',
+            'stock'             => 'nullable|integer|min:0|max:100000',
             'cabys_codigo'      => ['nullable', 'digits:13'],
             'cabys_descripcion' => ['nullable', 'string', 'max:255'],
             'impuesto'          => ['nullable', 'numeric', 'min:0', 'max:100'],
@@ -204,11 +174,8 @@ class ProductoController extends Controller
             'precio.required'       => 'El precio es obligatorio.',
             'precio.numeric'        => 'El precio debe ser un número.',
             'precio.min'            => 'El precio no puede ser negativo.',
-            'imagen.image'          => 'El archivo debe ser una imagen.',
-            'imagen.mimes'          => 'La imagen debe ser JPG o PNG.',
-            'imagen.max'            => 'La imagen no puede pesar más de 2 MB.',
-            'stock.integer' => 'El stock debe ser un número entero.',
-            'stock.min'     => 'El stock no puede ser negativo.',
-        ];
+            'stock.integer'         => 'El stock debe ser un número entero.',
+            'stock.min'             => 'El stock no puede ser negativo.',
+        ] + $this->mensajesImagen();
     }
 }
